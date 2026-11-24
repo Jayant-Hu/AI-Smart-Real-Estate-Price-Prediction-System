@@ -1,4 +1,5 @@
 Flask>=3.0.0
+gunicorn>=21.2.0
 catboost>=1.2.0
 pandas>=2.0.0
 numpy>=1.24.0

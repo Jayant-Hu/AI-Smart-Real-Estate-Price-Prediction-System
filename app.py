@@ -16,8 +16,9 @@ except Exception:
 
 from backend.main import app
 
-# Vercel entrypoint alias
-app = app
+# WSGI application callable for Gunicorn & Render
+application = app
 
 if __name__ == "__main__":
-    app.run()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
