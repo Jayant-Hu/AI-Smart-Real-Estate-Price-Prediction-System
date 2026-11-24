@@ -160,6 +160,15 @@
             <div class="map-frame" id="map-container">
                 <div id="map"></div>
 
+                <!-- Friendly Tile Fallback Notice -->
+                <div class="map-fallback-notice" id="map-tile-fallback-notice">
+                    <span style="font-size: 20px;">📡</span>
+                    <div>
+                        <strong>Connecting to OpenStreetMap...</strong>
+                        <div style="font-size: 11px; color: var(--text-muted);">Tiles are loading. You can still select locations or use the search bar.</div>
+                    </div>
+                </div>
+
                 <!-- Floating Place Search Bar -->
                 <div class="map-search-overlay" id="map-search-overlay">
                     <div class="map-search-bar">
@@ -226,7 +235,7 @@
                 <!-- Coordinate Pill inside map -->
                 <div class="map-coord-pill" id="map-coord-pill">
                     <span class="coord-dot"></span>
-                    <span id="map-coord-text">12.9698, 77.7500</span>
+                    <span id="map-coord-text">12.9716, 77.5946</span>
                 </div>
 
                 <!-- Out of Range Floating Banner inside map -->
@@ -240,14 +249,14 @@
                 <div class="location-info-main">
                     <div class="location-icon-badge" id="location-badge-icon">📍</div>
                     <div>
-                        <div class="location-text-title" id="status-location-name">Whitefield, Bengaluru</div>
-                        <div class="location-text-coords" id="status-coords">Lat: 12.969800, Lon: 77.750000</div>
+                        <div class="location-text-title" id="status-location-name">Bengaluru Central</div>
+                        <div class="location-text-coords" id="status-coords">Lat: 12.971600, Lon: 77.594600</div>
                     </div>
                 </div>
                 <div class="location-price-tag">
                     <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Micro-Market
                         Baseline</div>
-                    <div class="location-price-val" id="status-price-sqft">₹ 5,745 / sqft</div>
+                    <div class="location-price-val" id="status-price-sqft">₹ 9,500 / sqft</div>
                 </div>
             </div>
 
@@ -273,8 +282,8 @@
             <form id="valuation-form" action="/predict" method="POST" onsubmit="return handleFormSubmit(event)">
 
                 <!-- Hidden Coordinates Fields -->
-                <input type="hidden" id="lat" name="lat" value="12.9698">
-                <input type="hidden" id="lon" name="lon" value="77.7500">
+                <input type="hidden" id="lat" name="lat" value="12.9716">
+                <input type="hidden" id="lon" name="lon" value="77.5946">
                 <input type="hidden" id="bhk" name="bhk" value="3">
                 <input type="hidden" id="bath" name="bath" value="3">
 
@@ -567,10 +576,10 @@
         let searchDebounceTimer = null;
         window.gMapInitialized = false;
 
-        const defaultLat = 12.9698;
-        const defaultLon = 77.7500;
-        const defaultLocation = 'Whitefield';
-        const defaultPrice = 5745;
+        const defaultLat = 12.9716;
+        const defaultLon = 77.5946;
+        const defaultLocation = 'Bengaluru Central';
+        const defaultPrice = 9500;
 
         // ========================================================
         // HIGH-READABILITY GOOGLE MAP STYLES
@@ -618,15 +627,15 @@
             { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#60a5fa" }] }
         ];
 
-        // CARTO API Key Integration
-        const cartoApiKey = "{{ carto_api_key|default('cb1_58k0_1_9411212b0c1588afc5b8d754') }}";
+        // Free OpenStreetMap Tile Source (Zero API Key Required)
+        const OSM_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+        const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
-        // Leaflet Tile Layers with Authenticated CARTO Basemaps
+        // Leaflet Tile Layers using OpenStreetMap and Standard Public Imagery
         const leafletTileLayers = [
-            { name: 'Road', url: `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${cartoApiKey}` },
-            { name: 'Dark', url: `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?api_key=${cartoApiKey}` },
-            { name: 'Satellite', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' },
-            { name: 'Terrain', url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png' }
+            { name: 'Road', url: OSM_TILE_URL, attribution: OSM_ATTRIBUTION },
+            { name: 'Satellite', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attribution: '&copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community' },
+            { name: 'Terrain', url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap' }
         ];
 
         // ========================================================
@@ -842,10 +851,14 @@
                 }
             } else if (mapType === 'leaflet' && leafletMap) {
                 let idx = 0;
-                if (styleName === 'dark') idx = 1;
-                else if (styleName === 'satellite') idx = 2;
+                if (styleName === 'satellite') idx = 1;
+                else if (styleName === 'terrain') idx = 2;
                 if (leafletTileLayer) leafletMap.removeLayer(leafletTileLayer);
-                leafletTileLayer = L.tileLayer(leafletTileLayers[idx].url, { maxZoom: 19 }).addTo(leafletMap);
+                const activeConf = leafletTileLayers[idx] || leafletTileLayers[0];
+                leafletTileLayer = L.tileLayer(activeConf.url, {
+                    maxZoom: 19,
+                    attribution: activeConf.attribution
+                }).addTo(leafletMap);
             }
         }
 
@@ -895,15 +908,20 @@
 
             leafletMap = L.map('map', {
                 zoomControl: false,
-                attributionControl: false
-            }).setView([defaultLat, defaultLon], 13);
+                attributionControl: true
+            }).setView([defaultLat, defaultLon], 11);
 
             L.control.zoom({ position: 'bottomright' }).addTo(leafletMap);
 
-            leafletTileLayer = L.tileLayer(leafletTileLayers[0].url, {
+            leafletTileLayer = L.tileLayer(OSM_TILE_URL, {
                 maxZoom: 19,
-                subdomains: 'abcd'
+                attribution: OSM_ATTRIBUTION
             }).addTo(leafletMap);
+
+            leafletTileLayer.on('tileerror', function () {
+                const notice = document.getElementById('map-tile-fallback-notice');
+                if (notice) notice.style.display = 'flex';
+            });
 
             const customIcon = L.divIcon({
                 className: 'custom-gold-marker',

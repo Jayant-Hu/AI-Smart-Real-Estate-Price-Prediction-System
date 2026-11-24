@@ -489,8 +489,16 @@
                 </div>
             </div>
 
-            <div class="result-map-frame">
+            <div class="result-map-frame" style="position: relative;">
                 <div id="result-map" style="width: 100%; height: 100%;"></div>
+                <!-- Friendly Tile Fallback Notice -->
+                <div class="map-fallback-notice" id="result-map-fallback-notice">
+                    <span style="font-size: 20px;">📡</span>
+                    <div>
+                        <strong>Connecting to OpenStreetMap...</strong>
+                        <div style="font-size: 11px; color: var(--text-muted);">Catchment map is rendering.</div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -735,14 +743,18 @@
 
             window.resultLeafletMap = L.map('result-map', {
                 zoomControl: true,
-                attributionControl: false
-            }).setView([propLat, propLon], 14);
+                attributionControl: true
+            }).setView([propLat, propLon], 13);
 
-            const cartoApiKey = "{{ carto_api_key|default('cb1_58k0_1_9411212b0c1588afc5b8d754') }}";
-            L.tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${cartoApiKey}`, {
+            const osmResultLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
-                subdomains: 'abcd'
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(window.resultLeafletMap);
+
+            osmResultLayer.on('tileerror', function () {
+                const notice = document.getElementById('result-map-fallback-notice');
+                if (notice) notice.style.display = 'flex';
+            });
 
             const customIcon = L.divIcon({
                 className: 'custom-gold-marker',

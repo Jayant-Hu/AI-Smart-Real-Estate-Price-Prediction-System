@@ -143,10 +143,6 @@ GOOGLE_MAPS_API_KEY = os.environ.get(
     "GOOGLE_MAPS_API_KEY",
     "AIzaSyAx45MvFENu_hnGgLy2lHQ2pW9z1WaTgjs"
 )
-CARTO_API_KEY = os.environ.get(
-    "CARTO_API_KEY",
-    "cb1_58k0_1_9411212b0c1588afc5b8d754"
-)
 
 @app.route('/api/locations')
 def get_locations_api():
@@ -161,8 +157,7 @@ def home():
     return render_template(
         "index.html",
         locations=locations_list,
-        google_maps_api_key=GOOGLE_MAPS_API_KEY,
-        carto_api_key=CARTO_API_KEY
+        google_maps_api_key=GOOGLE_MAPS_API_KEY
     )
 
 # ---------------------------------------
@@ -457,8 +452,7 @@ def predict():
             "investment_score": round(investment_score, 1),
             "lat": lat,
             "lon": lon,
-            "google_maps_api_key": GOOGLE_MAPS_API_KEY,
-            "carto_api_key": CARTO_API_KEY
+            "google_maps_api_key": GOOGLE_MAPS_API_KEY
         }
 
         # Support JSON clients or direct form post

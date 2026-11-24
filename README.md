@@ -5,7 +5,7 @@ An institutional-grade, AI-powered residential property valuation engine and geo
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)
 ![Framework](https://img.shields.io/badge/Flask-Web%20App-black?logo=flask)
 ![Machine Learning](https://img.shields.io/badge/CatBoost-Regressor-yellow)
-![Maps](https://img.shields.io/badge/Leaflet%20%7C%20CARTO-Basemaps-orange?logo=leaflet)
+![Maps](https://img.shields.io/badge/Leaflet%20%7C%20OpenStreetMap-Tiles-orange?logo=openstreetmap)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-emerald)
 
 ---
@@ -14,7 +14,7 @@ An institutional-grade, AI-powered residential property valuation engine and geo
 
 - **Hybrid AI Valuation Engine:** Combines localized micro-market pricing (65% baseline) with a multi-feature CatBoost gradient-boosted regressor (35% regression) trained on 13.3K+ historical listings with an **82.4% $R^2$ model accuracy**.
 - **Interactive Geospatial Intelligence:** 
-  - Point-and-click interactive mapping with CARTO Voyager, Dark Matter, Esri Photoreal Satellite, and Topographic Elevation views.
+  - Point-and-click interactive mapping with OpenStreetMap, Esri Photoreal Satellite, and Topographic Elevation views.
   - 1km micro-market catchment circle & radius analysis.
   - Drop-pin mode, GPS locator, and quick-select chips for prime Bengaluru hubs (Indiranagar, Koramangala, Whitefield, HSR Layout, Electronic City, Bellandur, Hebbal, etc.).
 - **Smart Natural Language AI Concierge:** 
@@ -34,7 +34,7 @@ An institutional-grade, AI-powered residential property valuation engine and geo
 
 - **Backend:** Python, Flask, Pandas, NumPy, CatBoost
 - **Frontend:** HTML5, CSS3 (Modern Glassmorphism & Executive Dark/Gold Theme), JavaScript (ES6+)
-- **Mapping & GIS:** Leaflet.js, CARTO Basemaps API, Google Maps JS API (optional hybrid fallback), Nominatim Geocoding
+- **Mapping & GIS:** Leaflet.js, OpenStreetMap (Free, No API key required), Google Maps JS API (optional hybrid fallback), Nominatim Geocoding
 - **Machine Learning Models:** `CatBoostRegressor` serialized via `pickle`, locality price benchmarks, spatial proximity matrices
 
 ---
