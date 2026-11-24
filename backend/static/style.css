@@ -1904,6 +1904,399 @@ footer {
 }
 
 /* ==========================================================================
+   STEP 3 COMPONENTS: HERO CTA, HOW IT WORKS, STEPPERS, TOOLTIPS, CHARTS
+   ========================================================================== */
+
+/* Hero "Get Price Estimate" CTA */
+.hero-cta-wrap {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.btn-hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    background: var(--accent);
+    color: var(--text);
+    border-radius: var(--radius-full);
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 700;
+    box-shadow: var(--shadow-peach);
+    transition: var(--transition);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-hero-cta:hover {
+    background: var(--accent-deep);
+    color: var(--text);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(240, 149, 106, 0.4);
+}
+
+.btn-hero-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 24px;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--lavender);
+    border-radius: var(--radius-full);
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: var(--shadow-subtle);
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.btn-hero-secondary:hover {
+    background: var(--surface-alt);
+    border-color: var(--primary-deep);
+    color: var(--primary-deep);
+}
+
+/* How It Works (3 Steps) */
+.how-it-works-section {
+    max-width: 1280px;
+    margin: 0 auto 36px;
+    padding: 0 24px;
+}
+
+.how-steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.how-step-card {
+    background: var(--surface);
+    border: 1px solid var(--lavender);
+    border-radius: var(--radius-card);
+    padding: 22px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    box-shadow: var(--shadow-subtle);
+    transition: var(--transition);
+}
+
+.how-step-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
+    border-color: var(--primary);
+}
+
+.how-step-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    background: var(--surface-alt);
+    border: 1px solid var(--lavender);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--primary-deep);
+    flex-shrink: 0;
+}
+
+.how-step-content h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.how-step-content p {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* Stepper Control (+ / -) */
+.stepper-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.stepper-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface-alt);
+    border: 1px solid var(--lavender);
+    border-radius: var(--radius-full);
+    padding: 3px 8px;
+}
+
+.stepper-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(91, 141, 184, 0.15);
+    transition: var(--transition);
+}
+
+.stepper-btn:hover {
+    background: var(--primary);
+    color: var(--text);
+}
+
+.stepper-val-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    min-width: 48px;
+    text-align: center;
+}
+
+/* Tooltip */
+.tooltip-trigger {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--surface-alt);
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 700;
+    cursor: help;
+    margin-left: 6px;
+    border: 1px solid var(--lavender);
+}
+
+.tooltip-trigger:hover .tooltip-bubble {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.tooltip-bubble {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: var(--text);
+    color: #FFFFFF;
+    font-size: 11px;
+    line-height: 1.4;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    width: max-content;
+    max-width: 220px;
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: var(--transition);
+    z-index: 100;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+}
+
+.tooltip-bubble::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--text);
+}
+
+/* Amenities Toggles Grid */
+.amenities-section {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px dashed var(--lavender);
+}
+
+.amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.amenity-toggle-item {
+    background: var(--surface-alt);
+    border: 1px solid var(--lavender);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.amenity-toggle-item .toggle-switch {
+    transform: scale(0.85);
+}
+
+/* Form Actions Row: Reset + Submit */
+.form-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.btn-reset {
+    padding: 15px 18px;
+    background: var(--surface);
+    border: 1px solid var(--lavender);
+    border-radius: var(--radius-input);
+    color: var(--text-muted);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.btn-reset:hover {
+    background: var(--surface-alt);
+    color: var(--text);
+    border-color: var(--primary-deep);
+}
+
+/* Inline Validation Alert Message */
+.inline-validation-msg {
+    display: none;
+    font-size: 11.5px;
+    color: var(--error);
+    margin-top: 6px;
+    font-weight: 600;
+}
+
+/* Visual Insights Card & Charts */
+.visual-insights-section {
+    background: var(--surface);
+    border: 1px solid var(--lavender);
+    border-radius: var(--radius-card);
+    padding: 26px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 24px;
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 18px;
+}
+
+.insight-chart-card {
+    background: var(--surface-alt);
+    border: 1px solid var(--lavender);
+    border-radius: var(--radius-md);
+    padding: 18px;
+}
+
+.chart-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.chart-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+}
+
+.bar-chart-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11.5px;
+}
+
+.bar-label {
+    width: 95px;
+    color: var(--text);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bar-track {
+    flex: 1;
+    height: 14px;
+    background: var(--surface);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--lavender);
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    background: var(--primary-deep);
+    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bar-fill.highlight {
+    background: var(--accent);
+}
+
+.bar-val {
+    min-width: 65px;
+    text-align: right;
+    font-weight: 700;
+    color: var(--text);
+}
+
+@media (max-width: 768px) {
+    .how-steps-grid {
+        grid-template-columns: 1fr;
+    }
+    .amenities-grid {
+        grid-template-columns: 1fr;
+    }
+    .insights-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================================================================
    PRINT SPECIFICATION
    ========================================================================== */
 

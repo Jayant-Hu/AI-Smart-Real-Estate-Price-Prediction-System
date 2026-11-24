@@ -46,9 +46,18 @@
                 Precision Real Estate Valuation with <span class="highlight">Machine Learning</span>
             </h1>
             <p class="hero-subtitle">
-                Engineered for Bengaluru’s dynamic property market. Point-and-click to map any micro-market, select
-                specifications, and generate an institutional-grade valuation report in milliseconds.
+                Institutional-grade property pricing for Bengaluru. Pinpoint micro-markets, configure architectural layout, and forecast fair valuations in seconds.
             </p>
+
+            <!-- Hero CTA Peach Button & Secondary Action -->
+            <div class="hero-cta-wrap">
+                <a href="#valuation-form" class="btn-hero-cta">
+                    <span>🏷️</span> Get Price Estimate
+                </a>
+                <a href="#how-it-works" class="btn-hero-secondary">
+                    <span>📖</span> How It Works
+                </a>
+            </div>
 
             <!-- Stats Ribbon -->
             <div class="stats-ribbon">
@@ -71,6 +80,33 @@
             </div>
         </div>
     </header>
+
+    <!-- How It Works Section (3 Icon Steps) -->
+    <section class="how-it-works-section" id="how-it-works">
+        <div class="how-steps-grid">
+            <div class="how-step-card">
+                <div class="how-step-badge">📍</div>
+                <div class="how-step-content">
+                    <h3>1. Select Locality</h3>
+                    <p>Search over 900+ Bengaluru micro-markets, select prime hubs, or drop an exact GPS pin on the map.</p>
+                </div>
+            </div>
+            <div class="how-step-card">
+                <div class="how-step-badge">📐</div>
+                <div class="how-step-content">
+                    <h3>2. Configure Layout</h3>
+                    <p>Set bedroom count (BHK), bathrooms, and built-up area slider with live unit conversions and presets.</p>
+                </div>
+            </div>
+            <div class="how-step-card">
+                <div class="how-step-badge">⚡</div>
+                <div class="how-step-content">
+                    <h3>3. Instant Valuation</h3>
+                    <p>CatBoost gradient boosted decision trees generate fair market prices, confidence bands, and EMI breakdown.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Main Workspace Container -->
     <main class="main-layout">
@@ -234,9 +270,21 @@
                 <input type="hidden" id="bhk" name="bhk" value="3">
                 <input type="hidden" id="bath" name="bath" value="3">
 
-                <!-- BHK Pill Selector -->
+                <!-- BHK Stepper & Pill Selector -->
                 <div class="form-group">
-                    <label class="form-label">Bedroom Configuration (BHK)</label>
+                    <div class="stepper-header-row">
+                        <label class="form-label" style="margin-bottom: 0;">
+                            Bedroom Configuration (BHK)
+                            <span class="tooltip-trigger">?
+                                <span class="tooltip-bubble">Number of bedrooms. Higher BHK layouts influence spatial valuation in prime corridors.</span>
+                            </span>
+                        </label>
+                        <div class="stepper-inline">
+                            <button type="button" class="stepper-btn" onclick="stepBhk(-1)">−</button>
+                            <span class="stepper-val-text" id="bhk-stepper-val">3 BHK</span>
+                            <button type="button" class="stepper-btn" onclick="stepBhk(1)">+</button>
+                        </div>
+                    </div>
                     <div class="segmented-pills" id="bhk-pills">
                         <div class="segmented-pill" data-val="1">1 BHK</div>
                         <div class="segmented-pill" data-val="2">2 BHK</div>
@@ -246,9 +294,21 @@
                     </div>
                 </div>
 
-                <!-- Bathroom Pill Selector -->
+                <!-- Bathroom Stepper & Pill Selector -->
                 <div class="form-group">
-                    <label class="form-label">Bathrooms</label>
+                    <div class="stepper-header-row">
+                        <label class="form-label" style="margin-bottom: 0;">
+                            Bathrooms
+                            <span class="tooltip-trigger">?
+                                <span class="tooltip-bubble">Attached and common bathrooms. Luxury ratio (>BHK) adds value premium.</span>
+                            </span>
+                        </label>
+                        <div class="stepper-inline">
+                            <button type="button" class="stepper-btn" onclick="stepBath(-1)">−</button>
+                            <span class="stepper-val-text" id="bath-stepper-val">3 Baths</span>
+                            <button type="button" class="stepper-btn" onclick="stepBath(1)">+</button>
+                        </div>
+                    </div>
                     <div class="segmented-pills" id="bath-pills">
                         <div class="segmented-pill" data-val="1">1 Bath</div>
                         <div class="segmented-pill" data-val="2">2 Baths</div>
@@ -260,11 +320,16 @@
 
                 <!-- Total Built-up Area Slider & Number Input -->
                 <div class="form-group">
-                    <label class="form-label">Total Built-Up Area</label>
+                    <label class="form-label">
+                        Total Built-Up Area
+                        <span class="tooltip-trigger">?
+                            <span class="tooltip-bubble">Super built-up area in square feet including carpet area, walls, and balconies.</span>
+                        </span>
+                    </label>
                     <div class="area-control-box">
                         <div class="area-input-row">
                             <input type="number" id="total_sqft" name="total_sqft" class="area-num-input" value="1650"
-                                min="300" max="10000" step="10" required>
+                                min="300" max="10000" step="10" required oninput="validateAreaInput(this)">
                             <span class="area-unit">SQ FT</span>
                         </div>
                         <input type="range" id="sqft-slider" class="range-slider" min="400" max="6000" step="25"
@@ -277,12 +342,12 @@
                             <span class="preset-chip" onclick="setSqft(3800)">3,800 (Villa)</span>
                         </div>
                     </div>
+                    <div id="area-val-error" class="inline-validation-msg">⚠️ Area must be between 300 and 10,000 sq ft.</div>
                 </div>
 
                 <!-- Property Category Selector -->
                 <div class="form-group">
-                    <label class="form-label">Property Category <span class="optional">(Architectural
-                            Type)</span></label>
+                    <label class="form-label">Property Category <span class="optional">(Architectural Type)</span></label>
                     <div class="property-types-grid" id="prop-types">
                         <div class="property-type-card active" onclick="selectPropType(this, 'Apartment')">
                             <div class="property-type-icon">🏢</div>
@@ -303,10 +368,48 @@
                     </div>
                 </div>
 
-                <!-- Submit CTA Button -->
-                <button type="submit" id="btn-submit" class="btn-submit">
-                    <span>⚡ Run AI Property Valuation</span>
-                </button>
+                <!-- Step 3: Key Amenities & Features -->
+                <div class="amenities-section">
+                    <label class="form-label">
+                        ✨ Key Amenities & Society Features
+                        <span class="tooltip-trigger">?
+                            <span class="tooltip-bubble">Common luxury amenities found across Bengaluru high-rise communities.</span>
+                        </span>
+                    </label>
+                    <div class="amenities-grid">
+                        <div class="amenity-toggle-item">
+                            <span>🛡️ Gated Society</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-gated" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="amenity-toggle-item">
+                            <span>🚗 Covered Parking</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-parking" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="amenity-toggle-item">
+                            <span>🛗 High-Speed Lift</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-lift" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Action Buttons: Reset & Submit -->
+                <div class="form-actions-row">
+                    <button type="button" class="btn-reset" onclick="resetValuationForm()" title="Reset to default Whitefield 3BHK">
+                        <span>↺</span> Reset
+                    </button>
+                    <button type="submit" id="btn-submit" class="btn-submit" style="margin-top: 0; flex: 1;">
+                        <span>⚡ Run AI Property Valuation</span>
+                    </button>
+                </div>
             </form>
         </section>
     </main>
@@ -1246,7 +1349,65 @@
         // ========================================================
         // UI FORM SPECIFICATIONS & VALIDATION
         // ========================================================
-        function setupPills(containerId, hiddenInputId) {
+        function stepBhk(delta) {
+            let current = parseInt(document.getElementById('bhk').value) || 3;
+            let next = Math.max(1, Math.min(5, current + delta));
+            document.getElementById('bhk').value = next;
+            const stepperText = document.getElementById('bhk-stepper-val');
+            if (stepperText) stepperText.textContent = next === 5 ? '5+ BHK' : next + ' BHK';
+            document.querySelectorAll('#bhk-pills .segmented-pill').forEach(pill => {
+                pill.classList.toggle('active', parseInt(pill.getAttribute('data-val')) === next);
+            });
+        }
+
+        function stepBath(delta) {
+            let current = parseInt(document.getElementById('bath').value) || 3;
+            let next = Math.max(1, Math.min(5, current + delta));
+            document.getElementById('bath').value = next;
+            const stepperText = document.getElementById('bath-stepper-val');
+            if (stepperText) stepperText.textContent = next === 5 ? '5+ Baths' : next + ' Baths';
+            document.querySelectorAll('#bath-pills .segmented-pill').forEach(pill => {
+                pill.classList.toggle('active', parseInt(pill.getAttribute('data-val')) === next);
+            });
+        }
+
+        function validateAreaInput(input) {
+            const val = parseInt(input.value) || 0;
+            const errEl = document.getElementById('area-val-error');
+            if (errEl) {
+                if (val < 300 || val > 10000) {
+                    errEl.style.display = 'block';
+                } else {
+                    errEl.style.display = 'none';
+                }
+            }
+        }
+
+        function resetValuationForm() {
+            document.getElementById('bhk').value = 3;
+            document.getElementById('bath').value = 3;
+            const bhkText = document.getElementById('bhk-stepper-val');
+            if (bhkText) bhkText.textContent = '3 BHK';
+            const bathText = document.getElementById('bath-stepper-val');
+            if (bathText) bathText.textContent = '3 Baths';
+
+            document.querySelectorAll('#bhk-pills .segmented-pill').forEach(pill => {
+                pill.classList.toggle('active', pill.getAttribute('data-val') === '3');
+            });
+            document.querySelectorAll('#bath-pills .segmented-pill').forEach(pill => {
+                pill.classList.toggle('active', pill.getAttribute('data-val') === '3');
+            });
+
+            setSqft(1650);
+            validateAreaInput(document.getElementById('total_sqft'));
+
+            const whitefieldChip = document.querySelector('#preset-chips .locality-chip[data-name="Whitefield"]');
+            if (whitefieldChip) {
+                whitefieldChip.click();
+            }
+        }
+
+        function setupPills(containerId, hiddenInputId, stepperId, unitSuffix) {
             const container = document.getElementById(containerId);
             const hiddenInput = document.getElementById(hiddenInputId);
             if (!container || !hiddenInput) return;
@@ -1255,13 +1416,18 @@
                 pill.addEventListener('click', function () {
                     container.querySelectorAll('.segmented-pill').forEach(p => p.classList.remove('active'));
                     this.classList.add('active');
-                    hiddenInput.value = this.getAttribute('data-val');
+                    const val = this.getAttribute('data-val');
+                    hiddenInput.value = val;
+                    const stepperText = document.getElementById(stepperId);
+                    if (stepperText) {
+                        stepperText.textContent = val === '5' ? `5+ ${unitSuffix}` : `${val} ${unitSuffix}`;
+                    }
                 });
             });
         }
 
-        setupPills('bhk-pills', 'bhk');
-        setupPills('bath-pills', 'bath');
+        setupPills('bhk-pills', 'bhk', 'bhk-stepper-val', 'BHK');
+        setupPills('bath-pills', 'bath', 'bath-stepper-val', 'Baths');
 
         const sqftInput = document.getElementById('total_sqft');
         const sqftSlider = document.getElementById('sqft-slider');

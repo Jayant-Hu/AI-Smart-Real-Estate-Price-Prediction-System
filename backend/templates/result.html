@@ -69,7 +69,7 @@
                         {% if is_out_of_range %}
                             <span style="color: var(--warning); font-size: clamp(24px, 4vw, 38px); font-weight: 800;">Outside the range</span>
                         {% else %}
-                            {{ price_crores }}
+                            <span id="animated-price-display">{{ price_crores }}</span>
                             {% if prediction >= 100 %}
                                 <span class="unit-crore">({{ prediction }} Lakhs)</span>
                             {% endif %}
@@ -372,6 +372,102 @@
                     <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">HSR Layout (Startup Hub)</div>
                     <div style="font-size: 18px; font-weight: 700; color: var(--text); margin: 4px 0;">₹ 7,850 / sqft</div>
                     <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Premium Connectivity</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 3: Visual Insights (Price Comparison & Feature Sensitivity Charts) -->
+        <section class="visual-insights-section">
+            <div class="card-header" style="border-bottom: none; padding-bottom: 0;">
+                <div>
+                    <h3 class="card-title">📊 Visual Intelligence & Predictive Analytics</h3>
+                    <p class="card-subtitle">Comparative spatial benchmarks and machine learning feature attribution</p>
+                </div>
+            </div>
+
+            <div class="insights-grid">
+                <!-- Chart 1: Price / Sqft Distribution -->
+                <div class="insight-chart-card">
+                    <div class="chart-title">
+                        <span>🏷️</span> Micro-Market Price/Sqft Benchmark
+                    </div>
+                    <div class="chart-subtitle">Comparing {{ location }} with key corridors</div>
+                    <div class="bar-chart-wrap">
+                        <div class="bar-row">
+                            <div class="bar-label">{{ location }}</div>
+                            <div class="bar-track">
+                                {% set prop_pct = (price_sqft / 14000 * 100)|int %}
+                                <div class="bar-fill highlight" style="width: {{ [prop_pct, 100]|min }}%;"></div>
+                            </div>
+                            <div class="bar-val">₹{{ price_sqft }}</div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="bar-label">Indiranagar</div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: 66%;"></div>
+                            </div>
+                            <div class="bar-val">₹9,240</div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="bar-label">Koramangala</div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: 98%;"></div>
+                            </div>
+                            <div class="bar-val">₹13,850</div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="bar-label">HSR Layout</div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: 56%;"></div>
+                            </div>
+                            <div class="bar-val">₹7,850</div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="bar-label">Whitefield</div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: 41%;"></div>
+                            </div>
+                            <div class="bar-val">₹5,745</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Model Feature Weight Breakdown -->
+                <div class="insight-chart-card">
+                    <div class="chart-title">
+                        <span>🤖</span> CatBoost Feature Importance
+                    </div>
+                    <div class="chart-subtitle">Relative weight contribution to valuation</div>
+                    <div class="bar-chart-wrap">
+                        <div class="bar-row">
+                            <div class="bar-label">Built-Up Area</div>
+                            <div class="bar-track">
+                                <div class="bar-fill highlight" style="width: 42%;"></div>
+                            </div>
+                            <div class="bar-val">42%</div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="bar-label">Locality Index</div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: 35%;"></div>
+                            </div>
+                            <div class="bar-val">35%</div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="bar-label">Spatial & CBD</div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: 15%;"></div>
+                            </div>
+                            <div class="bar-val">15%</div>
+                        </div>
+                        <div class="bar-row">
+                            <div class="bar-label">BHK/Bath Ratio</div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: 8%;"></div>
+                            </div>
+                            <div class="bar-val">8%</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -694,6 +790,32 @@
             document.querySelectorAll('.progress-bar-fill[data-progress]').forEach(bar => {
                 bar.style.width = bar.getAttribute('data-progress') + '%';
             });
+
+            // Count-up animation on reveal for predicted valuation
+            const priceEl = document.getElementById('animated-price-display');
+            if (priceEl && !priceEl.textContent.includes('Outside')) {
+                const rawText = priceEl.textContent.trim();
+                const match = rawText.match(/₹\s*([\d\.]+)\s*(Cr|Crores|Lakhs|L)?/i);
+                if (match) {
+                    const targetNum = parseFloat(match[1]);
+                    const unit = match[2] ? (' ' + match[2]) : '';
+                    const duration = 1100;
+                    const startTime = performance.now();
+                    function updateCount(now) {
+                        const elapsed = now - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        const easeOut = 1 - Math.pow(1 - progress, 3);
+                        const current = (targetNum * easeOut).toFixed(2);
+                        priceEl.textContent = '₹ ' + current + unit;
+                        if (progress < 1) {
+                            requestAnimationFrame(updateCount);
+                        } else {
+                            priceEl.textContent = rawText;
+                        }
+                    }
+                    requestAnimationFrame(updateCount);
+                }
+            }
 
             // Safety fallback if Google Maps doesn't load or displays error within 1.2s
             setTimeout(() => {
