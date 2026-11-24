@@ -56,6 +56,93 @@
 }
 
 /* ==========================================================================
+   DARK THEME TOKENS (DEEP NAVY WITH SUNSET PEACH ACCENTS)
+   ========================================================================== */
+
+[data-theme="dark"] {
+    --bg:            #0B1120;   /* Deep navy page background */
+    --surface:       #131D31;   /* Elevated dark navy cards */
+    --surface-alt:   #1A263D;   /* Dark navy inputs & sections */
+    --primary:       #3B82F6;   /* Electric blue main */
+    --primary-deep:  #60A5FA;   /* Light blue links & focus */
+    --accent:        #FFB68F;   /* Warm sunset peach preserved */
+    --accent-deep:   #F0956A;   /* CTA hover */
+    --lavender:      #243350;   /* Navy borders & dividers */
+    --text:          #F1F5F9;   /* High-contrast crisp white-slate */
+    --text-muted:    #94A3B8;   /* Slate secondary text */
+    --shadow-soft:   0 8px 30px rgba(0, 0, 0, 0.45);
+    --shadow-subtle: 0 4px 16px rgba(0, 0, 0, 0.35);
+    --shadow-hover:  0 12px 36px rgba(0, 0, 0, 0.55);
+}
+
+[data-theme="dark"] body {
+    background-color: var(--bg);
+    background-image: 
+        radial-gradient(circle at 92% 8%, rgba(255, 182, 143, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 6% 92%, rgba(59, 130, 246, 0.12) 0%, transparent 45%),
+        linear-gradient(135deg, #0B1120 0%, #0F172A 100%);
+    color: var(--text);
+}
+
+[data-theme="dark"] .navbar {
+    background: rgba(19, 29, 49, 0.88);
+    border-bottom: 1px solid var(--lavender);
+}
+
+/* Focus Visible & Accessibility Focus Rings */
+:focus-visible {
+    outline: 2px solid var(--primary-deep) !important;
+    outline-offset: 2px !important;
+}
+
+/* Accessibility Touch Targets (>= 44px) */
+.btn-submit,
+.btn-hero-cta,
+.btn-hero-secondary,
+.btn-reset,
+.btn-outline,
+.map-action-btn,
+.ai-concierge-fab,
+.theme-toggle-btn {
+    min-height: 44px;
+}
+
+.segmented-pill {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-toggle-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    border: 1px solid var(--lavender);
+    color: var(--text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    box-shadow: var(--shadow-subtle);
+    transition: var(--transition);
+}
+
+.theme-toggle-btn:hover {
+    background: var(--surface-alt);
+    border-color: var(--primary-deep);
+    transform: scale(1.05);
+}
+
+.theme-icon-dark { display: none; }
+.theme-icon-light { display: inline-block; }
+
+[data-theme="dark"] .theme-icon-dark { display: inline-block; }
+[data-theme="dark"] .theme-icon-light { display: none; }
+
+/* ==========================================================================
    RESET & FOUNDATIONAL STYLING
    ========================================================================== */
 
@@ -1900,6 +1987,49 @@ footer {
 
     .glass-card {
         padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .segmented-pills {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .hero-title {
+        font-size: 27px;
+    }
+    .map-frame {
+        height: 380px;
+    }
+    .map-view-switcher {
+        display: none;
+    }
+    .form-actions-row {
+        flex-direction: column;
+    }
+    .btn-reset, .btn-submit {
+        width: 100%;
+        justify-content: center;
+    }
+    .val-quick-specs {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 360px) {
+    .segmented-pills {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .hero-title {
+        font-size: 23px;
+    }
+    .nav-title {
+        font-size: 16px;
+    }
+    .nav-badge {
+        display: none;
+    }
+    .stat-value {
+        font-size: 22px;
     }
 }
 
