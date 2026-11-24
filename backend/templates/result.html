@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valuation Dossier — {{ location }} | Smart Real Estate AI</title>
+    <meta name="description" content="Property valuation report for {{ location }} generated via CatBoost machine learning model.">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Leaflet Maps CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="/" style="display: flex; align-items: center; gap: 14px;">
+                <div class="nav-logo-icon">🏛️</div>
+                <div>
+                    <div class="nav-title">ESTATE AI <span style="font-weight: 300; font-size: 16px; opacity: 0.8;">| BENGALURU</span></div>
+                    <div class="nav-tagline">Valuation Intelligence Dossier</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="dossier-actions">
+            <a href="/" class="btn-outline">
+                <span>🔙</span> Recalculate
+            </a>
+            <button onclick="window.print()" class="btn-outline btn-print">
+                <span>🖨️</span> Save PDF Report
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Dossier Content -->
+    <div class="dossier-wrapper">
+
+        <!-- Header Info Bar -->
+        <div class="dossier-header-bar">
+            <div class="dossier-header-left">
+                <span class="dossier-tag">Official Valuation Dossier</span>
+                <span style="font-size: 13px; color: var(--text-muted);">ID: BLR-{{ location|replace(' ', '')|upper|truncate(6, True, '') }}-{{ bhk }}BHK</span>
+            </div>
+            <div style="font-size: 13px; color: var(--text-secondary);">
+                <span>Generated via CatBoost Regressor (RMSE Optimized)</span>
+            </div>
+        </div>
+
+        <!-- Valuation Hero Card -->
+        <section class="valuation-hero-card">
+            <div class="valuation-hero-grid">
+                <div>
+                    <div class="val-badge-row">
+                        {% if is_out_of_range %}
+                            <span class="premium-badge" style="background: rgba(245, 158, 11, 0.18); border-color: rgba(245, 158, 11, 0.5); color: #fbbf24;">⚠️ Outside Bangalore Region</span>
+                        {% elif premium_location == 1 %}
+                            <span class="premium-badge">💎 Tier-1 Prime Tech Corridor</span>
+                        {% else %}
+                            <span class="premium-badge" style="background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: #60a5fa;">📍 Established Residential Hub</span>
+                        {% endif %}
+                        <span class="val-label">Estimated Fair Market Valuation</span>
+                    </div>
+
+                    <div class="val-price-main">
+                        {% if is_out_of_range %}
+                            <span style="color: #f59e0b; font-size: clamp(24px, 4vw, 38px); font-weight: 800;">Outside the range</span>
+                        {% else %}
+                            {{ price_crores }}
+                            {% if prediction >= 100 %}
+                                <span class="unit-crore">({{ prediction }} Lakhs)</span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <div class="val-confidence">
+                        <span>Confidence Range:</span>
+                        {% if is_out_of_range %}
+                            <strong style="color: #f59e0b;">Outside the range</strong>
+                            <span class="confidence-chip" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3);">⚠️ Geographic Outlier</span>
+                        {% else %}
+                            <strong style="color: var(--text-primary);">₹ {{ price_range_min }}L — ₹ {{ price_range_max }}L</strong>
+                            <span class="confidence-chip">±5% Volatility Band</span>
+                        {% endif %}
+                    </div>
+
+                    {% if is_out_of_range %}
+                    <div style="margin-top: 14px; padding: 10px 14px; border-radius: 8px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); font-size: 12px; color: #fde68a; line-height: 1.5;">
+                        <strong>📍 Geographic Scope Notice:</strong> Coordinates (Lat: {{ lat }}, Lon: {{ lon }}) fall outside the Greater Bengaluru real estate training boundaries. Valuation is marked as <strong>Outside the range</strong>.
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Quick Specs Strip -->
+                <div class="val-quick-specs">
+                    <div class="quick-spec-item">
+                        <div class="spec-icon-box">🏠</div>
+                        <div>
+                            <div class="spec-data-val">{{ sqft }} Sq Ft</div>
+                            <div class="spec-data-lbl">Total Built-Up Area</div>
+                        </div>
+                    </div>
+
+                    <div class="quick-spec-item">
+                        <div class="spec-icon-box">🛏️</div>
+                        <div>
+                            <div class="spec-data-val">{{ bhk }} BHK</div>
+                            <div class="spec-data-lbl">Bedrooms</div>
+                        </div>
+                    </div>
+
+                    <div class="quick-spec-item">
+                        <div class="spec-icon-box">🚿</div>
+                        <div>
+                            <div class="spec-data-val">{{ bath }} Bathrooms</div>
+                            <div class="spec-data-lbl">Bath Count</div>
+                        </div>
+                    </div>
+
+                    <div class="quick-spec-item">
+                        <div class="spec-icon-box">📐</div>
+                        <div>
+                            <div class="spec-data-val">{{ luxury_score }}</div>
+                            <div class="spec-data-lbl">Sqft / Room Ratio</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4 Key Intelligence Metric Cards -->
+        <section class="metrics-grid-4">
+            
+            <!-- 1. Price Per Sqft -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Price / Sq Ft</span>
+                    <span class="metric-icon">💰</span>
+                </div>
+                <div class="metric-value">₹ {{ price_sqft }}</div>
+                <div class="progress-bar-wrap">
+                    {% set pct_price = (price_sqft / 20000 * 100)|int %}
+                    <div class="progress-bar-fill" data-progress="{{ [pct_price, 100]|min }}"></div>
+                </div>
+                <div class="metric-footer-text">
+                    Locality Benchmark: {{ location }}
+                </div>
+            </div>
+
+            <!-- 2. Trend Score -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Market Demand Trend</span>
+                    <span class="metric-icon">📈</span>
+                </div>
+                <div class="metric-value">{{ trend_score }} <span style="font-size: 16px; color: var(--text-muted);">/ 10</span></div>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill emerald" data-progress="{{ (trend_score * 10)|int }}"></div>
+                </div>
+                <div class="metric-footer-text">
+                    {% if trend_score >= 7 %}
+                        High Liquidity & Active Demand
+                    {% elif trend_score >= 5 %}
+                        Moderate Capital Velocity
+                    {% else %}
+                        Emerging Outer Zone
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 3. Investment Potential -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">Investment Index</span>
+                    <span class="metric-icon">💎</span>
+                </div>
+                <div class="metric-value">{{ investment_score }} <span style="font-size: 16px; color: var(--text-muted);">/ 100</span></div>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill blue" data-progress="{{ [investment_score, 100]|min }}"></div>
+                </div>
+                <div class="metric-footer-text">
+                    Yield & Growth Score
+                </div>
+            </div>
+
+            <!-- 4. Infrastructure & CBD -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span class="metric-title">CBD Proximity & Infra</span>
+                    <span class="metric-icon">🏫</span>
+                </div>
+                <div class="metric-value">{{ approx_dist_km }} <span style="font-size: 16px; color: var(--text-muted);">km to CBD</span></div>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" data-progress="{{ [100 - (approx_dist_km * 3), 20]|max }}"></div>
+                </div>
+                <div class="metric-footer-text">
+                    Schools: {{ schools }}/10 • Hospitals: {{ hospitals }}/6
+                </div>
+            </div>
+        </section>
+
+        <!-- Split Row: Model Transparency & Mortgage EMI Calculator -->
+        <div class="dossier-split-row">
+            
+            <!-- Model Architecture & Weighting Breakdown -->
+            <div class="model-breakdown-box">
+                <div class="card-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 12px;">
+                    <div>
+                        <h3 class="card-title">⚙️ Hybrid AI Valuation Breakdown</h3>
+                        <p class="card-subtitle">Transparent blend of localized micro-market pricing and CatBoost gradient boosting</p>
+                    </div>
+                </div>
+
+                <div class="breakdown-bar">
+                    <div class="breakdown-segment seg-market" title="65% Market Benchmark Base"></div>
+                    <div class="breakdown-segment seg-ml" title="35% CatBoost Feature Regression"></div>
+                </div>
+
+                <div class="breakdown-legend">
+                    <div class="legend-item">
+                        <div class="legend-color-dot" style="background: var(--gold-500);"></div>
+                        <div>
+                            <div class="legend-text-val">₹ {{ base_price }} Lakhs (65%)</div>
+                            <div class="legend-text-desc">Area Base ({{ sqft }} sqft × ₹{{ price_sqft }})</div>
+                        </div>
+                    </div>
+
+                    <div class="legend-item">
+                        <div class="legend-color-dot" style="background: #3b82f6;"></div>
+                        <div>
+                            <div class="legend-text-val">₹ {{ ml_prediction }} Lakhs (35%)</div>
+                            <div class="legend-text-desc">CatBoost Multi-Feature Regressor</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border-subtle);">
+                    <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;">
+                        Applied Value Modifiers:
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        {% if bhk >= 3 %}
+                            <span class="locality-chip" style="cursor: default;">✓ Executive {{ bhk }}BHK Premium (+5%)</span>
+                        {% endif %}
+                        {% if bath > bhk %}
+                            <span class="locality-chip" style="cursor: default;">✓ High En-Suite Ratio (+3%)</span>
+                        {% endif %}
+                        {% if sqft > 2500 %}
+                            <span class="locality-chip" style="cursor: default;">✓ Large Footprint Unit (+8%)</span>
+                        {% endif %}
+                        {% if sqft > 4000 %}
+                            <span class="locality-chip" style="cursor: default;">✓ Ultra-Luxury Scale (+15%)</span>
+                        {% endif %}
+                        {% if premium_location == 1 %}
+                            <span class="locality-chip" style="cursor: default;">✓ Tier-1 Location Premium (+12%)</span>
+                        {% endif %}
+                        {% if trend_score >= 8 %}
+                            <span class="locality-chip" style="cursor: default;">✓ High Momentum Corridor (+6%)</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Mortgage / EMI Estimator -->
+            <div class="mortgage-card">
+                <div class="card-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 12px;">
+                    <div>
+                        <h3 class="card-title">💳 Home Loan & EMI Estimator</h3>
+                        <p class="card-subtitle">Calculate estimated monthly financing for this valuation</p>
+                    </div>
+                </div>
+
+                <div class="mortgage-result-banner">
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;">Monthly EMI Payment</div>
+                        <div class="emi-amount-display">₹ <span id="live-emi">{{ estimated_emi }}</span></div>
+                    </div>
+                    <div style="text-align: right; font-size: 12px; color: var(--text-muted);">
+                        Based on 80% Loan<br>Standard Tenure
+                    </div>
+                </div>
+
+                <!-- Down Payment Slider -->
+                <div class="mortgage-slider-group">
+                    <div class="mortgage-slider-labels">
+                        <span>Down Payment:</span>
+                        <strong id="downpayment-label" style="color: var(--text-primary);">20%</strong>
+                    </div>
+                    <input type="range" id="slider-downpayment" class="range-slider" min="10" max="50" step="5" value="20" oninput="calculateLiveEMI()">
+                </div>
+
+                <!-- Loan Tenure Slider -->
+                <div class="mortgage-slider-group">
+                    <div class="mortgage-slider-labels">
+                        <span>Loan Tenure:</span>
+                        <strong id="tenure-label" style="color: var(--text-primary);">20 Years</strong>
+                    </div>
+                    <input type="range" id="slider-tenure" class="range-slider" min="5" max="30" step="5" value="20" oninput="calculateLiveEMI()">
+                </div>
+
+                <!-- Interest Rate Slider -->
+                <div class="mortgage-slider-group">
+                    <div class="mortgage-slider-labels">
+                        <span>Interest Rate:</span>
+                        <strong id="rate-label" style="color: var(--text-primary);">8.5 %</strong>
+                    </div>
+                    <input type="range" id="slider-rate" class="range-slider" min="6.5" max="13.0" step="0.25" value="8.5" oninput="calculateLiveEMI()">
+                </div>
+
+                <!-- Karnataka Stamp Duty & Registration Fee Toggle -->
+                <div class="stamp-duty-card">
+                    <div class="stamp-duty-toggle-row">
+                        <div>
+                            <div style="font-weight: 600; font-size: 13px; color: var(--text-primary);">Include Govt. Stamp Duty & Reg.</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">Karnataka Statutory Cost (~6.6%)</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="stamp-duty-toggle" onchange="calculateLiveEMI()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="stamp-duty-breakdown" id="stamp-duty-breakdown">
+                        <div class="stamp-breakdown-row">
+                            <span>Base Property Valuation:</span>
+                            <span id="sd-base-val">₹ --</span>
+                        </div>
+                        <div class="stamp-breakdown-row">
+                            <span>Stamp Duty (5.6%):</span>
+                            <span id="sd-stamp-val">₹ --</span>
+                        </div>
+                        <div class="stamp-breakdown-row">
+                            <span>Registration Fee (1.0%):</span>
+                            <span id="sd-reg-val">₹ --</span>
+                        </div>
+                        <div class="stamp-breakdown-row total">
+                            <span>Total Capital Outlay:</span>
+                            <span id="sd-total-val">₹ --</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Micro-Market Benchmark Comparison -->
+        <section class="glass-card" style="margin-top: 28px; padding: 24px;">
+            <div class="card-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 16px;">
+                <div>
+                    <h3 class="card-title">⚖️ Benchmark Micro-Market Comparison</h3>
+                    <p class="card-subtitle">How <strong>{{ location }}</strong> (₹{{ price_sqft }}/sqft) compares to key tech & residential corridors</p>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+                <div class="metric-card" style="background: rgba(13, 20, 36, 0.7);">
+                    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted);">Indiranagar (Tier-1)</div>
+                    <div style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 4px 0;">₹ 9,240 / sqft</div>
+                    <div style="font-size: 11px; color: var(--emerald-500);">Central Prime Corridor</div>
+                </div>
+                <div class="metric-card" style="background: rgba(13, 20, 36, 0.7);">
+                    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted);">Koramangala (Prime)</div>
+                    <div style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 4px 0;">₹ 13,850 / sqft</div>
+                    <div style="font-size: 11px; color: var(--gold-500);">High Density Luxury</div>
+                </div>
+                <div class="metric-card" style="background: rgba(13, 20, 36, 0.7);">
+                    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted);">Whitefield (ITPB Hub)</div>
+                    <div style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 4px 0;">₹ 5,745 / sqft</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">High Rental Demand</div>
+                </div>
+                <div class="metric-card" style="background: rgba(13, 20, 36, 0.7);">
+                    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted);">HSR Layout (Startup Hub)</div>
+                    <div style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 4px 0;">₹ 7,850 / sqft</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">Premium Connectivity</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Geospatial Property Catchment Map -->
+        <section class="result-map-card">
+            <div class="card-header" style="border-bottom: none; padding-bottom: 0;">
+                <div>
+                    <h3 class="card-title">🗺️ Property Catchment & Neighborhood Map</h3>
+                    <p class="card-subtitle">Exact coordinate anchor at <strong>{{ location }}</strong> ({{ lat }}, {{ lon }}) with 1km radius micro-market perimeter</p>
+                </div>
+            </div>
+
+            <div class="result-map-frame">
+                <div id="result-map" style="width: 100%; height: 100%;"></div>
+            </div>
+        </section>
+
+        <!-- Bottom Action Bar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding: 20px 0; border-top: 1px solid var(--border-subtle); flex-wrap: wrap; gap: 16px;">
+            <div style="font-size: 13px; color: var(--text-muted);">
+                Need to evaluate a different property or floor layout?
+            </div>
+            <div style="display: flex; gap: 14px;">
+                <a href="/" class="btn-outline">
+                    <span>🔄</span> Run Another Valuation
+                </a>
+                <button onclick="window.print()" class="btn-outline btn-print">
+                    <span>📄</span> Download Dossier (PDF)
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand">🏛️ SMART REAL ESTATE AI — BENGALURU</div>
+            <p>Valuation models are predictive analytics based on historical sales and spatial features. Certified surveyor physical inspections remain recommended for formal mortgage approvals.</p>
+            <p style="font-size: 11px; opacity: 0.6; margin-top: 10px;">© 2026 Bengaluru Real Estate AI Engine. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS (Fallback) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Google Maps API -->
+    <script>
+        window.googleResultAuthFailed = false;
+        window.gm_authFailure = function () {
+            window.googleResultAuthFailed = true;
+            console.warn("[Google Maps] Referer, billing, or auth restriction encountered in result view. Preserving Leaflet.");
+            if (typeof initLeafletResultMap === 'function') {
+                initLeafletResultMap(true);
+            }
+        };
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|default('AIzaSyAx45MvFENu_hnGgLy2lHQ2pW9z1WaTgjs') }}&libraries=places,geometry&callback=initGoogleResultMap&loading=async"
+        async defer onerror="initLeafletResultMap(true)"></script>
+
+    <script>
+        const propertyPrice = parseFloat("{{ prediction }}") || 0;
+        const propLat = parseFloat("{{ lat }}") || 12.9716;
+        const propLon = parseFloat("{{ lon }}") || 77.5946;
+        const propLocation = "{{ location }}";
+        const priceCrores = "{{ price_crores }}";
+        window.resultMapInitialized = false;
+
+        // Dynamic EMI & Stamp Duty Calculator
+        function calculateLiveEMI() {
+            const downPct = parseFloat(document.getElementById('slider-downpayment').value);
+            const tenureYears = parseInt(document.getElementById('slider-tenure').value);
+            const annualRate = parseFloat(document.getElementById('slider-rate').value);
+            const includeStampDuty = document.getElementById('stamp-duty-toggle')?.checked || false;
+
+            document.getElementById('downpayment-label').textContent = downPct + "%";
+            document.getElementById('tenure-label').textContent = tenureYears + " Years";
+            document.getElementById('rate-label').textContent = annualRate.toFixed(2) + " %";
+
+            const baseValuationRupees = propertyPrice * 100000;
+            const stampDuty = baseValuationRupees * 0.056;
+            const regFee = baseValuationRupees * 0.01;
+            const totalOutlay = baseValuationRupees + stampDuty + regFee;
+
+            const breakdownEl = document.getElementById('stamp-duty-breakdown');
+            if (breakdownEl) {
+                if (includeStampDuty) {
+                    breakdownEl.classList.add('active');
+                    document.getElementById('sd-base-val').textContent = '₹ ' + Math.round(baseValuationRupees).toLocaleString('en-IN');
+                    document.getElementById('sd-stamp-val').textContent = '₹ ' + Math.round(stampDuty).toLocaleString('en-IN');
+                    document.getElementById('sd-reg-val').textContent = '₹ ' + Math.round(regFee).toLocaleString('en-IN');
+                    document.getElementById('sd-total-val').textContent = '₹ ' + Math.round(totalOutlay).toLocaleString('en-IN');
+                } else {
+                    breakdownEl.classList.remove('active');
+                }
+            }
+
+            const effectivePrice = includeStampDuty ? totalOutlay : baseValuationRupees;
+            const loanAmount = effectivePrice * ((100 - downPct) / 100);
+            const monthlyRate = (annualRate / 100) / 12;
+            const months = tenureYears * 12;
+
+            if (loanAmount <= 0) {
+                document.getElementById('live-emi').textContent = "0";
+                return;
+            }
+
+            const emi = loanAmount * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
+            document.getElementById('live-emi').textContent = Math.round(emi).toLocaleString('en-IN');
+        }
+
+        // Crisp High-Readability Roadmap Style
+        const CRISP_ROAD_STYLE = [
+            { elementType: "geometry", stylers: [{ color: "#f8fafc" }] },
+            { elementType: "labels.text.fill", stylers: [{ color: "#0f172a" }] },
+            { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }, { weight: 3 }] },
+            { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#0369a1" }, { weight: "bold" }] },
+            { featureType: "administrative.neighborhood", elementType: "labels.text.fill", stylers: [{ color: "#1e293b" }] },
+            { featureType: "poi", elementType: "geometry", stylers: [{ color: "#f1f5f9" }] },
+            { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#dcfce7" }] },
+            { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#15803d" }] },
+            { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+            { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#cbd5e1" }] },
+            { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#fed7aa" }] },
+            { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#f97316" }] },
+            { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#9a3412" }] },
+            { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+            { featureType: "road.arterial", elementType: "geometry.stroke", stylers: [{ color: "#94a3b8" }] },
+            { featureType: "transit", elementType: "geometry", stylers: [{ color: "#f1f5f9" }] },
+            { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#0284c7" }] },
+            { featureType: "water", elementType: "geometry", stylers: [{ color: "#bae6fd" }] },
+            { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#0369a1" }] }
+        ];
+
+        // Initialize Google Maps in Result Page (Safe Probe)
+        window.initGoogleResultMap = function () {
+            if (window.resultMapInitialized || window.googleResultAuthFailed) return;
+            const mapEl = document.getElementById('result-map');
+            if (!mapEl || typeof google === 'undefined' || !google.maps) {
+                return;
+            }
+
+            const testDiv = document.createElement('div');
+            testDiv.style.cssText = 'position:absolute;width:10px;height:10px;top:-9999px;opacity:0;pointer-events:none;';
+            document.body.appendChild(testDiv);
+
+            try {
+                const pos = { lat: propLat, lng: propLon };
+                const testMap = new google.maps.Map(testDiv, { center: pos, zoom: 14 });
+
+                let tilesLoaded = false;
+                google.maps.event.addListenerOnce(testMap, 'tilesloaded', function () {
+                    tilesLoaded = true;
+                    try { document.body.removeChild(testDiv); } catch(e){}
+                    activateGoogleResultMap();
+                });
+
+                setTimeout(() => {
+                    if (!tilesLoaded) {
+                        console.warn("[Google Maps Result] API Key has restrictions. Preserving Leaflet map.");
+                        try { document.body.removeChild(testDiv); } catch(e){}
+                    }
+                }, 2000);
+            } catch (err) {
+                console.error("[Google Maps Result Error]", err);
+                try { document.body.removeChild(testDiv); } catch(e){}
+            }
+        };
+
+        function activateGoogleResultMap() {
+            const mapEl = document.getElementById('result-map');
+            if (!mapEl) return;
+
+            try {
+                if (window.resultLeafletMap) {
+                    try { window.resultLeafletMap.remove(); } catch(e){}
+                    window.resultLeafletMap = null;
+                }
+                mapEl.innerHTML = '';
+                if (mapEl._leaflet_id) delete mapEl._leaflet_id;
+
+                window.resultMapInitialized = true;
+                const pos = { lat: propLat, lng: propLon };
+
+                const map = new google.maps.Map(mapEl, {
+                    center: pos,
+                    zoom: 14,
+                    styles: CRISP_ROAD_STYLE,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    mapTypeControl: true,
+                    streetViewControl: false,
+                    fullscreenControl: true
+                });
+
+                const markerIcon = {
+                    path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z",
+                    fillColor: "#d4af37",
+                    fillOpacity: 1,
+                    strokeColor: "#ffffff",
+                    strokeWeight: 2,
+                    scale: 2.2,
+                    anchor: new google.maps.Point(12, 22)
+                };
+
+                const marker = new google.maps.Marker({
+                    position: pos,
+                    map: map,
+                    icon: markerIcon,
+                    animation: google.maps.Animation.DROP,
+                    title: propLocation
+                });
+
+                // 1km catchment perimeter
+                new google.maps.Circle({
+                    map: map,
+                    center: pos,
+                    radius: 1000,
+                    strokeColor: "#d4af37",
+                    strokeOpacity: 0.85,
+                    strokeWeight: 2,
+                    fillColor: "#d4af37",
+                    fillOpacity: 0.12
+                });
+
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `<div style="font-family: 'Plus Jakarta Sans', sans-serif; padding: 4px; color: #0f172a;">
+                        <div style="font-size: 11px; text-transform: uppercase; color: #b45309; font-weight: 700; letter-spacing: 0.5px;">Evaluated Anchor</div>
+                        <div style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 2px 0;">${propLocation}</div>
+                        <div style="font-size: 17px; font-weight: 800; color: #b45309;">${priceCrores}</div>
+                        <div style="font-size: 10px; color: #64748b; margin-top: 4px;">1km Catchment Zone Analyzed</div>
+                    </div>`
+                });
+
+                infoWindow.open(map, marker);
+                marker.addListener('click', () => infoWindow.open(map, marker));
+            } catch (err) {
+                console.error("[Google Maps Result Activation Error]", err);
+                initLeafletResultMap(true);
+            }
+        }
+
+        // Fallback Leaflet Result Map
+        function initLeafletResultMap(force = false) {
+            if (window.resultLeafletMap && !force) return;
+            const mapEl = document.getElementById('result-map');
+            if (!mapEl) return;
+
+            if (window.resultLeafletMap) {
+                try { window.resultLeafletMap.remove(); } catch (e) { }
+                window.resultLeafletMap = null;
+            }
+            mapEl.innerHTML = '';
+            if (mapEl._leaflet_id) {
+                delete mapEl._leaflet_id;
+            }
+
+            window.resultLeafletMap = L.map('result-map', {
+                zoomControl: true,
+                attributionControl: false
+            }).setView([propLat, propLon], 14);
+
+            const cartoApiKey = "{{ carto_api_key|default('cb1_58k0_1_9411212b0c1588afc5b8d754') }}";
+            L.tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${cartoApiKey}`, {
+                maxZoom: 19,
+                subdomains: 'abcd'
+            }).addTo(window.resultLeafletMap);
+
+            const customIcon = L.divIcon({
+                className: 'custom-gold-marker',
+                html: '<div class="pin-pulse"></div><div class="pin-core"></div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13],
+                popupAnchor: [0, -15]
+            });
+
+            const marker = L.marker([propLat, propLon], { icon: customIcon }).addTo(window.resultLeafletMap);
+            marker.bindPopup(`<b>${propLocation}</b><br>Valuation: ${priceCrores}`).openPopup();
+
+            L.circle([propLat, propLon], {
+                color: '#d4af37',
+                fillColor: '#d4af37',
+                fillOpacity: 0.12,
+                weight: 1.5,
+                radius: 1000
+            }).addTo(window.resultLeafletMap);
+        }
+
+        // Activate Leaflet Result Map immediately so catchment map is visible instantly
+        initLeafletResultMap(true);
+        setTimeout(() => {
+            if (window.resultLeafletMap) window.resultLeafletMap.invalidateSize();
+        }, 200);
+
+        if (window._pendingLeafletResultFallback) {
+            initLeafletResultMap(true);
+        }
+
+        // MutationObserver Guardian for result page
+        const resultMapObserver = new MutationObserver(() => {
+            const mapEl = document.getElementById('result-map');
+            if (mapEl) {
+                const hasGmError = mapEl.querySelector('.gm-err-container') ||
+                    mapEl.querySelector('[class*="gm-err"]') ||
+                    (mapEl.innerText && mapEl.innerText.includes("Oops! Something went wrong"));
+                if (hasGmError && !window.resultLeafletMap) {
+                    console.warn("[Google Maps Result Guardian] Detected error dialog in container. Swapping to Leaflet.");
+                    resultMapObserver.disconnect();
+                    initLeafletResultMap(true);
+                }
+            }
+        });
+        const resultMapContainer = document.getElementById('result-map');
+        if (resultMapContainer) {
+            resultMapObserver.observe(resultMapContainer, { childList: true, subtree: true });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Animate progress bars
+            document.querySelectorAll('.progress-bar-fill[data-progress]').forEach(bar => {
+                bar.style.width = bar.getAttribute('data-progress') + '%';
+            });
+
+            // Safety fallback if Google Maps doesn't load or displays error within 1.2s
+            setTimeout(() => {
+                const mapEl = document.getElementById('result-map');
+                const hasGmError = mapEl && (
+                    mapEl.querySelector('.gm-err-container') ||
+                    mapEl.querySelector('[class*="gm-err"]') ||
+                    (mapEl.innerText && mapEl.innerText.includes("Oops! Something went wrong"))
+                );
+                if (hasGmError || !window.resultLeafletMap) {
+                    initLeafletResultMap(true);
+                }
+            }, 1200);
+        });
+    </script>
+</body>
+</html>

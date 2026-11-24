@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Real Estate AI — Bengaluru Property Valuation Platform</title>
+    <meta name="description"
+        content="AI-powered residential property valuation engine for Bengaluru with geospatial feature intelligence and CatBoost machine learning.">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Leaflet Maps CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+</head>
+
+<body>
+
+    <!-- Top Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo-icon">🏛️</div>
+            <div>
+                <div class="nav-title">ESTATE AI <span style="font-weight: 300; font-size: 16px; opacity: 0.8;">|
+                        BENGALURU</span></div>
+                <div class="nav-tagline">Machine Learning Valuation Engine</div>
+            </div>
+        </div>
+
+        <div class="nav-badge">
+            <span class="dot"></span>
+            CatBoost ML v2.4 • 900+ Micro-Markets Live
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <div class="hero-glow"></div>
+        <div class="hero-container">
+            <div class="hero-pill">
+                <span>✨</span> Predictive Geospatial Intelligence
+            </div>
+            <h1 class="hero-title">
+                Precision Real Estate Valuation with <span class="highlight">Machine Learning</span>
+            </h1>
+            <p class="hero-subtitle">
+                Engineered for Bengaluru’s dynamic property market. Point-and-click to map any micro-market, select
+                specifications, and generate an institutional-grade valuation report in milliseconds.
+            </p>
+
+            <!-- Stats Ribbon -->
+            <div class="stats-ribbon">
+                <div class="stat-item">
+                    <div class="stat-value">82.4%</div>
+                    <div class="stat-title">R² Model Accuracy</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">900+</div>
+                    <div class="stat-title">Mapped Localities</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">&lt; 0.1s</div>
+                    <div class="stat-title">Inference Speed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">13.3K</div>
+                    <div class="stat-title">Trained Listings</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="main-layout">
+
+        <!-- LEFT COLUMN: MAP & LOCALITY PINPOINTING -->
+        <section class="glass-card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">📍 Step 1: Select Property Location</h2>
+                    <p class="card-subtitle">Use the search bar, click on the map, or drop a pin to set your property
+                        location</p>
+                </div>
+            </div>
+
+            <!-- Prime Hub Quick Select Chips -->
+            <div class="chips-section">
+                <div class="chips-label">
+                    <span>⚡</span> Prime Hubs Quick-Select:
+                </div>
+                <div class="chips-wrapper" id="preset-chips">
+                    <div class="locality-chip" data-name="Indiranagar" data-lat="12.9784" data-lon="77.6408"
+                        data-price="9240">💎 Indiranagar</div>
+                    <div class="locality-chip" data-name="Koramangala" data-lat="12.9352" data-lon="77.6245"
+                        data-price="13850">🚀 Koramangala</div>
+                    <div class="locality-chip active" data-name="Whitefield" data-lat="12.9698" data-lon="77.7500"
+                        data-price="5745">🏢 Whitefield</div>
+                    <div class="locality-chip" data-name="HSR Layout" data-lat="12.9121" data-lon="77.6446"
+                        data-price="7850">🌟 HSR Layout</div>
+                    <div class="locality-chip" data-name="Electronic City" data-lat="12.8452" data-lon="77.6602"
+                        data-price="4700">💻 Electronic City</div>
+                    <div class="locality-chip" data-name="Bellandur" data-lat="12.9304" data-lon="77.6784"
+                        data-price="5830">🏙️ Bellandur</div>
+                    <div class="locality-chip" data-name="Jayanagar" data-lat="12.9308" data-lon="77.5838"
+                        data-price="11490">🌳 Jayanagar</div>
+                    <div class="locality-chip" data-name="Hebbal" data-lat="13.0358" data-lon="77.5970"
+                        data-price="6950">✈️ Hebbal</div>
+                    <div class="locality-chip" data-name="JP Nagar" data-lat="12.9063" data-lon="77.5857"
+                        data-price="6200">🛍️ JP Nagar</div>
+                </div>
+            </div>
+
+            <!-- Enhanced Map Frame with Floating Controls -->
+            <div class="map-frame" id="map-container">
+                <div id="map"></div>
+
+                <!-- Floating Place Search Bar -->
+                <div class="map-search-overlay" id="map-search-overlay">
+                    <div class="map-search-bar">
+                        <div class="map-search-icon" id="map-search-spinner">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.35-4.35" />
+                            </svg>
+                        </div>
+                        <input type="text" id="map-place-search" class="map-search-input"
+                            placeholder="Search any place in Bengaluru or India..." autocomplete="off"
+                            spellcheck="false" />
+                        <button class="map-search-clear" id="map-search-clear" title="Clear search">✕</button>
+                    </div>
+                    <!-- Autocomplete Dropdown -->
+                    <div class="map-search-dropdown" id="map-search-dropdown"></div>
+                </div>
+
+                <!-- Map View Switcher Segmented Control (Top Right) -->
+                <div class="map-view-switcher" id="map-view-switcher">
+                    <button type="button" class="map-view-btn active" data-style="roadmap"
+                        title="High-Readability Crisp Street Map">🗺️ Road</button>
+                    <button type="button" class="map-view-btn" data-style="dark" title="Luxury Dark Slate Map">🌙
+                        Dark</button>
+                    <button type="button" class="map-view-btn" data-style="satellite"
+                        title="Photoreal Satellite Imagery">🛰️ Satellite</button>
+                    <button type="button" class="map-view-btn" data-style="terrain"
+                        title="Topographic Elevation Map">🏔️ Terrain</button>
+                </div>
+
+                <!-- Map Action Buttons (right side) -->
+                <div class="map-action-buttons">
+                    <button class="map-action-btn" id="btn-drop-pin"
+                        title="Drop Pin Mode: Click anywhere on map to place pin">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2a7 7 0 0 0-7 7c0 4 7 13 7 13s7-9 7-13a7 7 0 0 0-7-7z" />
+                            <circle cx="12" cy="9" r="2.5" />
+                        </svg>
+                        <span>Drop Pin</span>
+                    </button>
+                    <button class="map-action-btn" id="btn-my-location" title="Use my current GPS location">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="3" />
+                            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
+                                stroke-dasharray="4 2" />
+                        </svg>
+                        <span>My Location</span>
+                    </button>
+                    <button class="map-action-btn" id="btn-map-layer" title="Toggle Map Style">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polygon points="3,6 9,3 15,6 21,3 21,18 15,21 9,18 3,21" />
+                            <line x1="9" y1="3" x2="9" y2="18" />
+                            <line x1="15" y1="6" x2="15" y2="21" />
+                        </svg>
+                        <span>Layers</span>
+                    </button>
+                </div>
+
+                <!-- Coordinate Pill inside map -->
+                <div class="map-coord-pill" id="map-coord-pill">
+                    <span class="coord-dot"></span>
+                    <span id="map-coord-text">12.9698, 77.7500</span>
+                </div>
+
+                <!-- Out of Range Floating Banner inside map -->
+                <div class="map-out-of-range-banner" id="map-out-banner" style="display: none;">
+                    ⚠️ Selected location is outside Bangalore. Valuation: Outside the range
+                </div>
+            </div>
+
+            <!-- Enhanced Live Location Feedback Box -->
+            <div class="selected-location-box" id="location-status-box">
+                <div class="location-info-main">
+                    <div class="location-icon-badge" id="location-badge-icon">📍</div>
+                    <div>
+                        <div class="location-text-title" id="status-location-name">Whitefield, Bengaluru</div>
+                        <div class="location-text-coords" id="status-coords">Lat: 12.969800, Lon: 77.750000</div>
+                    </div>
+                </div>
+                <div class="location-price-tag">
+                    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Micro-Market
+                        Baseline</div>
+                    <div class="location-price-val" id="status-price-sqft">₹ 5,745 / sqft</div>
+                </div>
+            </div>
+
+            <!-- Hidden datalist for existing backend search (kept for compatibility) -->
+            <datalist id="locations-datalist">
+                {% if locations %}
+                {% for loc in locations %}
+                <option value="{{ loc.name }}"></option>
+                {% endfor %}
+                {% endif %}
+            </datalist>
+        </section>
+
+        <!-- RIGHT COLUMN: PROPERTY SPECIFICATIONS FORM -->
+        <section class="glass-card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">🏠 Step 2: Property Specifications</h2>
+                    <p class="card-subtitle">Configure the architectural layout and dimensions</p>
+                </div>
+            </div>
+
+            <form id="valuation-form" action="/predict" method="POST" onsubmit="return handleFormSubmit(event)">
+
+                <!-- Hidden Coordinates Fields -->
+                <input type="hidden" id="lat" name="lat" value="12.9698">
+                <input type="hidden" id="lon" name="lon" value="77.7500">
+                <input type="hidden" id="bhk" name="bhk" value="3">
+                <input type="hidden" id="bath" name="bath" value="3">
+
+                <!-- BHK Pill Selector -->
+                <div class="form-group">
+                    <label class="form-label">Bedroom Configuration (BHK)</label>
+                    <div class="segmented-pills" id="bhk-pills">
+                        <div class="segmented-pill" data-val="1">1 BHK</div>
+                        <div class="segmented-pill" data-val="2">2 BHK</div>
+                        <div class="segmented-pill active" data-val="3">3 BHK</div>
+                        <div class="segmented-pill" data-val="4">4 BHK</div>
+                        <div class="segmented-pill" data-val="5">5+ BHK</div>
+                    </div>
+                </div>
+
+                <!-- Bathroom Pill Selector -->
+                <div class="form-group">
+                    <label class="form-label">Bathrooms</label>
+                    <div class="segmented-pills" id="bath-pills">
+                        <div class="segmented-pill" data-val="1">1 Bath</div>
+                        <div class="segmented-pill" data-val="2">2 Baths</div>
+                        <div class="segmented-pill active" data-val="3">3 Baths</div>
+                        <div class="segmented-pill" data-val="4">4 Baths</div>
+                        <div class="segmented-pill" data-val="5">5+ Baths</div>
+                    </div>
+                </div>
+
+                <!-- Total Built-up Area Slider & Number Input -->
+                <div class="form-group">
+                    <label class="form-label">Total Built-Up Area</label>
+                    <div class="area-control-box">
+                        <div class="area-input-row">
+                            <input type="number" id="total_sqft" name="total_sqft" class="area-num-input" value="1650"
+                                min="300" max="10000" step="10" required>
+                            <span class="area-unit">SQ FT</span>
+                        </div>
+                        <input type="range" id="sqft-slider" class="range-slider" min="400" max="6000" step="25"
+                            value="1650">
+                        <div class="area-presets">
+                            <span class="preset-chip" onclick="setSqft(850)">850 (1-2BHK)</span>
+                            <span class="preset-chip" onclick="setSqft(1250)">1,250 (2BHK)</span>
+                            <span class="preset-chip" onclick="setSqft(1650)">1,650 (3BHK)</span>
+                            <span class="preset-chip" onclick="setSqft(2400)">2,400 (4BHK)</span>
+                            <span class="preset-chip" onclick="setSqft(3800)">3,800 (Villa)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Property Category Selector -->
+                <div class="form-group">
+                    <label class="form-label">Property Category <span class="optional">(Architectural
+                            Type)</span></label>
+                    <div class="property-types-grid" id="prop-types">
+                        <div class="property-type-card active" onclick="selectPropType(this, 'Apartment')">
+                            <div class="property-type-icon">🏢</div>
+                            <div class="property-type-title">Apartment</div>
+                        </div>
+                        <div class="property-type-card" onclick="selectPropType(this, 'Villa')">
+                            <div class="property-type-icon">🏡</div>
+                            <div class="property-type-title">Villa</div>
+                        </div>
+                        <div class="property-type-card" onclick="selectPropType(this, 'Penthouse')">
+                            <div class="property-type-icon">✨</div>
+                            <div class="property-type-title">Penthouse</div>
+                        </div>
+                        <div class="property-type-card" onclick="selectPropType(this, 'Floor')">
+                            <div class="property-type-icon">🧱</div>
+                            <div class="property-type-title">Floor House</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit CTA Button -->
+                <button type="submit" id="btn-submit" class="btn-submit">
+                    <span>⚡ Run AI Property Valuation</span>
+                </button>
+            </form>
+        </section>
+    </main>
+
+    <!-- Floating AI Concierge Button -->
+    <button type="button" class="ai-concierge-fab" id="open-concierge-btn">
+        <span class="ai-fab-pulse"></span>
+        <span>✨ Ask AI Concierge</span>
+    </button>
+
+    <!-- AI Concierge Drawer Backdrop & Panel -->
+    <div class="concierge-drawer-backdrop" id="concierge-backdrop"></div>
+    <aside class="concierge-drawer" id="concierge-drawer">
+        <div class="concierge-header">
+            <div class="concierge-title">
+                <span>🤖</span>
+                <span>Estate AI Concierge</span>
+                <span class="concierge-badge">CatBoost Live</span>
+            </div>
+            <button type="button" class="concierge-close-btn" id="close-concierge-btn"
+                title="Close Concierge">&times;</button>
+        </div>
+        <div class="concierge-chat-body" id="concierge-chat-body">
+            <div class="chat-bubble bot">
+                <strong>Welcome to Estate AI Assistant!</strong><br>
+                I can help you evaluate micro-markets, forecast valuations, and compare corridors across Bengaluru. Try
+                asking:
+                <ul>
+                    <li><em>"Find 3BHK in Indiranagar under 2 Cr"</em></li>
+                    <li><em>"Compare Whitefield vs HSR Layout"</em></li>
+                    <li><em>"Average rate for 2BHK in Bellandur"</em></li>
+                </ul>
+            </div>
+        </div>
+        <div class="concierge-suggestions">
+            <button type="button" class="suggestion-pill" onclick="sendQuickPrompt('Find 3BHK in Indiranagar')">📍 3BHK
+                in Indiranagar</button>
+            <button type="button" class="suggestion-pill"
+                onclick="sendQuickPrompt('Compare Whitefield vs HSR Layout')">⚖️ Whitefield vs HSR</button>
+            <button type="button" class="suggestion-pill" onclick="sendQuickPrompt('2BHK in Bellandur under 1.2 Cr')">🏢
+                2BHK in Bellandur</button>
+            <button type="button" class="suggestion-pill" onclick="sendQuickPrompt('4BHK luxury villa in Hebbal')">💎
+                Villa in Hebbal</button>
+        </div>
+        <div class="concierge-input-row">
+            <input type="text" id="concierge-input" class="concierge-input"
+                placeholder="Ask about localities, pricing, BHK..." autocomplete="off" />
+            <button type="button" id="concierge-send" class="concierge-send-btn">Send</button>
+        </div>
+    </aside>
+
+    <!-- AI Inference Telemetry Overlay -->
+    <div class="telemetry-overlay" id="telemetry-overlay">
+        <div class="telemetry-card">
+            <div class="telemetry-spinner"></div>
+            <div class="telemetry-title">Synthesizing Valuation Dossier</div>
+            <div class="telemetry-subtitle">Executing CatBoost Decision Trees & Geospatial Matrix</div>
+            <div class="telemetry-steps">
+                <div class="telemetry-step active" id="t-step-1">
+                    <div class="telemetry-step-icon">1</div>
+                    <span>Resolving micro-market coordinate boundary...</span>
+                </div>
+                <div class="telemetry-step" id="t-step-2">
+                    <div class="telemetry-step-icon">2</div>
+                    <span>Extracting spatial proximity & infrastructure density...</span>
+                </div>
+                <div class="telemetry-step" id="t-step-3">
+                    <div class="telemetry-step-icon">3</div>
+                    <span>Evaluating CatBoost gradient boosted tree ensembles...</span>
+                </div>
+                <div class="telemetry-step" id="t-step-4">
+                    <div class="telemetry-step-icon">4</div>
+                    <span>Synthesizing 65/35 institutional valuation dossier...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand">🏛️ SMART REAL ESTATE AI — BENGALURU</div>
+            <p>State-of-the-art hybrid property valuation engine combining CatBoost Gradient Tree Boosting with
+                localized price per square foot micro-market indices.</p>
+            <div class="footer-links">
+                <a href="#">Valuation Methodology</a>
+                <a href="#">Micro-Market Coverage</a>
+                <a href="#">API Documentation</a>
+                <a href="#">Security & Privacy</a>
+            </div>
+            <p style="font-size: 11px; opacity: 0.6; margin-top: 12px;">© 2026 Bengaluru Real Estate AI Engine.
+                Institutional Grade Valuation Intelligence.</p>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS (Fallback) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Location Data Payload (prevents JS syntax errors in editor) -->
+    <script id="locations-data" type="application/json">
+        {{ locations|tojson|safe if locations else '[]' }}
+    </script>
+
+    <!-- Google Maps API with Places & Geometry -->
+    <script>
+        window.googleAuthFailed = false;
+        // Catch Google Auth failures gracefully and fallback to Leaflet
+        window.gm_authFailure = function () {
+            window.googleAuthFailed = true;
+            console.warn("[Google Maps] Referer, billing, or auth restriction encountered with API key. Preserving high-readability Leaflet map.");
+            if (typeof initLeafletMap === 'function') {
+                initLeafletMap(true);
+            } else {
+                window._pendingLeafletFallback = true;
+            }
+        };
+    </script>
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|default('AIzaSyAx45MvFENu_hnGgLy2lHQ2pW9z1WaTgjs') }}&libraries=places,geometry&callback=initGoogleMap&loading=async"
+        async defer onerror="window.gm_authFailure()"></script>
+
+    <!-- Client-side Map and Valuation Intelligence Script -->
+    <script>
+        // Available locations from backend
+        const rawLocations = JSON.parse(document.getElementById('locations-data')?.textContent || '[]');
+        let locationPriceMap = {};
+        rawLocations.forEach(loc => {
+            if (loc && loc.name) {
+                locationPriceMap[loc.name.toLowerCase()] = loc;
+            }
+        });
+
+        // Global State - Default to Leaflet so map is immediately visible with zero delay
+        let mapType = 'leaflet'; // 'leaflet' or 'google'
+        let gMap = null;
+        let gMarker = null;
+        let gCircle = null;
+        let gInfoWindow = null;
+        let leafletMap = null;
+        let leafletMarker = null;
+        let leafletCircle = null;
+        let leafletTileLayer = null;
+        let activeTileIndex = 0;
+        let dropPinMode = false;
+        let currentStyle = 'roadmap';
+        let searchDebounceTimer = null;
+        window.gMapInitialized = false;
+
+        const defaultLat = 12.9698;
+        const defaultLon = 77.7500;
+        const defaultLocation = 'Whitefield';
+        const defaultPrice = 5745;
+
+        // ========================================================
+        // HIGH-READABILITY GOOGLE MAP STYLES
+        // ========================================================
+        const CRISP_ROAD_STYLE = [
+            { elementType: "geometry", stylers: [{ color: "#f8fafc" }] },
+            { elementType: "labels.text.fill", stylers: [{ color: "#0f172a" }] },
+            { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }, { weight: 3 }] },
+            { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#0369a1" }, { weight: "bold" }] },
+            { featureType: "administrative.neighborhood", elementType: "labels.text.fill", stylers: [{ color: "#1e293b" }] },
+            { featureType: "poi", elementType: "geometry", stylers: [{ color: "#f1f5f9" }] },
+            { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#dcfce7" }] },
+            { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#15803d" }] },
+            { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+            { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#cbd5e1" }] },
+            { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#fed7aa" }] },
+            { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#f97316" }] },
+            { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#9a3412" }] },
+            { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+            { featureType: "road.arterial", elementType: "geometry.stroke", stylers: [{ color: "#94a3b8" }] },
+            { featureType: "transit", elementType: "geometry", stylers: [{ color: "#f1f5f9" }] },
+            { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#0284c7" }] },
+            { featureType: "water", elementType: "geometry", stylers: [{ color: "#bae6fd" }] },
+            { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#0369a1" }] }
+        ];
+
+        const LUXURY_DARK_STYLE = [
+            { elementType: "geometry", stylers: [{ color: "#0c1322" }] },
+            { elementType: "labels.text.stroke", stylers: [{ color: "#080c14" }, { weight: 3 }] },
+            { elementType: "labels.text.fill", stylers: [{ color: "#f8fafc" }] },
+            { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#f5d77f" }, { weight: "bold" }] },
+            { featureType: "administrative.neighborhood", elementType: "labels.text.fill", stylers: [{ color: "#e2e8f0" }] },
+            { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#94a3b8" }] },
+            { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#0f291e" }] },
+            { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#34d399" }] },
+            { featureType: "road", elementType: "geometry", stylers: [{ color: "#1e293b" }] },
+            { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#0f172a" }] },
+            { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#d4af37" }] },
+            { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#854d0e" }] },
+            { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#ffffff" }] },
+            { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#334155" }] },
+            { featureType: "transit", elementType: "geometry", stylers: [{ color: "#1e293b" }] },
+            { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#38bdf8" }] },
+            { featureType: "water", elementType: "geometry", stylers: [{ color: "#0c2540" }] },
+            { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#60a5fa" }] }
+        ];
+
+        // CARTO API Key Integration
+        const cartoApiKey = "{{ carto_api_key|default('cb1_58k0_1_9411212b0c1588afc5b8d754') }}";
+
+        // Leaflet Tile Layers with Authenticated CARTO Basemaps
+        const leafletTileLayers = [
+            { name: 'Road', url: `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${cartoApiKey}` },
+            { name: 'Dark', url: `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?api_key=${cartoApiKey}` },
+            { name: 'Satellite', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' },
+            { name: 'Terrain', url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png' }
+        ];
+
+        // ========================================================
+        // GOOGLE MAPS PROBE & SAFE ACTIVATION
+        // ========================================================
+        window.initGoogleMap = function () {
+            if (window.googleAuthFailed) return;
+            const mapEl = document.getElementById('map');
+            if (!mapEl || typeof google === 'undefined' || !google.maps) {
+                return;
+            }
+
+            // Test if Google Maps API key is authorized to load tiles on this domain
+            const testDiv = document.createElement('div');
+            testDiv.style.cssText = 'position:absolute;width:10px;height:10px;top:-9999px;left:-9999px;opacity:0;pointer-events:none;';
+            document.body.appendChild(testDiv);
+
+            try {
+                const testMap = new google.maps.Map(testDiv, {
+                    center: { lat: defaultLat, lng: defaultLon },
+                    zoom: 14
+                });
+
+                let tilesLoaded = false;
+                google.maps.event.addListenerOnce(testMap, 'tilesloaded', function () {
+                    tilesLoaded = true;
+                    try { document.body.removeChild(testDiv); } catch (e) { }
+                    console.log("[Google Maps] API key successfully authorized. Upgrading to Google Maps.");
+                    activateGoogleMap();
+                });
+
+                setTimeout(() => {
+                    if (!tilesLoaded) {
+                        console.warn("[Google Maps] Key has Referer/API restrictions on this origin. Retaining high-performance Leaflet map.");
+                        try { document.body.removeChild(testDiv); } catch (e) { }
+                    }
+                }, 2000);
+            } catch (err) {
+                console.warn("[Google Maps] Probe error. Retaining Leaflet:", err);
+                try { document.body.removeChild(testDiv); } catch (e) { }
+            }
+        };
+
+        function activateGoogleMap() {
+            const mapEl = document.getElementById('map');
+            if (!mapEl || typeof google === 'undefined' || !google.maps) return;
+
+            try {
+                // Get current coordinate state
+                const curLat = parseFloat(document.getElementById('lat')?.value) || defaultLat;
+                const curLon = parseFloat(document.getElementById('lon')?.value) || defaultLon;
+
+                // Clean up Leaflet
+                if (leafletMap) {
+                    try { leafletMap.remove(); } catch (e) { }
+                    leafletMap = null;
+                }
+                mapEl.innerHTML = '';
+                if (mapEl._leaflet_id) delete mapEl._leaflet_id;
+
+                window.gMapInitialized = true;
+                mapType = 'google';
+
+                // Create Map Instance
+                gMap = new google.maps.Map(mapEl, {
+                    center: { lat: curLat, lng: curLon },
+                    zoom: 14,
+                    styles: CRISP_ROAD_STYLE,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    mapTypeControl: false,
+                    streetViewControl: false,
+                    fullscreenControl: false,
+                    zoomControl: true,
+                    zoomControlOptions: {
+                        position: google.maps.ControlPosition.RIGHT_BOTTOM
+                    }
+                });
+
+                const markerIcon = {
+                    path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z",
+                    fillColor: "#d4af37",
+                    fillOpacity: 1,
+                    strokeColor: "#ffffff",
+                    strokeWeight: 2,
+                    scale: 2,
+                    anchor: new google.maps.Point(12, 22)
+                };
+
+                gMarker = new google.maps.Marker({
+                    position: { lat: curLat, lng: curLon },
+                    map: gMap,
+                    icon: markerIcon,
+                    draggable: true,
+                    animation: google.maps.Animation.DROP,
+                    title: "Selected Property Location"
+                });
+
+                gCircle = new google.maps.Circle({
+                    map: gMap,
+                    center: { lat: curLat, lng: curLon },
+                    radius: 1000,
+                    strokeColor: "#d4af37",
+                    strokeOpacity: 0.85,
+                    strokeWeight: 1.8,
+                    fillColor: "#d4af37",
+                    fillOpacity: 0.12
+                });
+
+                gInfoWindow = new google.maps.InfoWindow({
+                    content: buildPopupHtml(defaultLocation, defaultPrice)
+                });
+                gInfoWindow.open(gMap, gMarker);
+
+                gMarker.addListener('drag', function () {
+                    const pos = gMarker.getPosition();
+                    gCircle.setCenter(pos);
+                    updateCoordinateDisplay(pos.lat(), pos.lng());
+                });
+
+                gMarker.addListener('dragend', function () {
+                    const pos = gMarker.getPosition();
+                    gCircle.setCenter(pos);
+                    updateCoordinates(pos.lat(), pos.lng());
+                });
+
+                gMarker.addListener('click', function () {
+                    gInfoWindow.open(gMap, gMarker);
+                });
+
+                gMap.addListener('click', function (e) {
+                    const lat = e.latLng.lat();
+                    const lng = e.latLng.lng();
+                    gMarker.setPosition(e.latLng);
+                    gCircle.setCenter(e.latLng);
+                    updateCoordinates(lat, lng);
+                    if (dropPinMode) exitDropPinMode();
+                });
+
+                gMap.addListener('mousemove', function (e) {
+                    updateCoordinateDisplay(e.latLng.lat(), e.latLng.lng());
+                });
+
+                try { setupGooglePlacesAutocomplete(); } catch (e) { }
+                setupStyleSwitcher();
+                setupButtonHandlers();
+            } catch (err) {
+                console.error("[Google Maps Activation Error]", err);
+                initLeafletMap(true);
+            }
+        }
+
+        // ========================================================
+        // GOOGLE PLACES AUTOCOMPLETE
+        // ========================================================
+        function setupGooglePlacesAutocomplete() {
+            const input = document.getElementById('map-place-search');
+            if (!input || !google || !google.maps || !google.maps.places) return;
+
+            const bengaluruBounds = new google.maps.LatLngBounds(
+                new google.maps.LatLng(12.7200, 77.4200),
+                new google.maps.LatLng(13.2000, 77.8200)
+            );
+
+            const autocomplete = new google.maps.places.Autocomplete(input, {
+                bounds: bengaluruBounds,
+                componentRestrictions: { country: "in" },
+                fields: ["geometry", "name", "formatted_address"]
+            });
+
+            autocomplete.addListener('place_changed', function () {
+                const place = autocomplete.getPlace();
+                if (!place.geometry || !place.geometry.location) {
+                    // Fall back to text match if user pressed enter on unselected text
+                    return;
+                }
+
+                const lat = place.geometry.location.lat();
+                const lon = place.geometry.location.lng();
+                const placeName = place.name || input.value;
+
+                gMap.panTo(place.geometry.location);
+                gMap.setZoom(15);
+                gMarker.setPosition(place.geometry.location);
+                gCircle.setCenter(place.geometry.location);
+
+                updateCoordinates(lat, lon, placeName);
+                document.querySelectorAll('#preset-chips .locality-chip').forEach(c => c.classList.remove('active'));
+            });
+        }
+
+        // ========================================================
+        // MAP STYLE SWITCHER (Road, Dark, Satellite, Terrain)
+        // ========================================================
+        function setMapStyle(styleName) {
+            currentStyle = styleName;
+            document.querySelectorAll('#map-view-switcher .map-view-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-style') === styleName);
+            });
+
+            if (mapType === 'google' && gMap) {
+                if (styleName === 'roadmap') {
+                    gMap.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+                    gMap.setOptions({ styles: CRISP_ROAD_STYLE });
+                } else if (styleName === 'dark') {
+                    gMap.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+                    gMap.setOptions({ styles: LUXURY_DARK_STYLE });
+                } else if (styleName === 'satellite') {
+                    gMap.setOptions({ styles: [] });
+                    gMap.setMapTypeId(google.maps.MapTypeId.HYBRID);
+                } else if (styleName === 'terrain') {
+                    gMap.setOptions({ styles: [] });
+                    gMap.setMapTypeId(google.maps.MapTypeId.TERRAIN);
+                }
+            } else if (mapType === 'leaflet' && leafletMap) {
+                let idx = 0;
+                if (styleName === 'dark') idx = 1;
+                else if (styleName === 'satellite') idx = 2;
+                if (leafletTileLayer) leafletMap.removeLayer(leafletTileLayer);
+                leafletTileLayer = L.tileLayer(leafletTileLayers[idx].url, { maxZoom: 19 }).addTo(leafletMap);
+            }
+        }
+
+        function setupStyleSwitcher() {
+            document.querySelectorAll('#map-view-switcher .map-view-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const style = this.getAttribute('data-style');
+                    setMapStyle(style);
+                });
+            });
+
+            // Action button layer cycle
+            const layerBtn = document.getElementById('btn-map-layer');
+            if (layerBtn) {
+                const stylesList = ['roadmap', 'dark', 'satellite', 'terrain'];
+                layerBtn.addEventListener('click', function () {
+                    let curIdx = stylesList.indexOf(currentStyle);
+                    let nextIdx = (curIdx + 1) % stylesList.length;
+                    setMapStyle(stylesList[nextIdx]);
+                });
+            }
+        }
+
+        // ========================================================
+        // LEAFLET MAP INITIALIZATION (FAILOVER / FALLBACK)
+        // ========================================================
+        function initLeafletMap(force = false) {
+            if (mapType === 'leaflet' && !force && leafletMap) return;
+            mapType = 'leaflet';
+            window.gMapInitialized = false;
+
+            const mapEl = document.getElementById('map');
+            if (!mapEl) return;
+
+            // Clean up any failed Google Maps or previous Leaflet instances
+            if (leafletMap) {
+                try { leafletMap.remove(); } catch (e) { }
+                leafletMap = null;
+            }
+            if (gMap) {
+                gMap = null;
+            }
+            mapEl.innerHTML = '';
+            if (mapEl._leaflet_id) {
+                delete mapEl._leaflet_id;
+            }
+
+            leafletMap = L.map('map', {
+                zoomControl: false,
+                attributionControl: false
+            }).setView([defaultLat, defaultLon], 13);
+
+            L.control.zoom({ position: 'bottomright' }).addTo(leafletMap);
+
+            leafletTileLayer = L.tileLayer(leafletTileLayers[0].url, {
+                maxZoom: 19,
+                subdomains: 'abcd'
+            }).addTo(leafletMap);
+
+            const customIcon = L.divIcon({
+                className: 'custom-gold-marker',
+                html: `<div class="pin-pulse"></div><div class="pin-core"></div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
+                popupAnchor: [0, -20]
+            });
+
+            leafletMarker = L.marker([defaultLat, defaultLon], {
+                icon: customIcon,
+                draggable: true
+            }).addTo(leafletMap);
+
+            leafletMarker.bindPopup(buildPopupHtml(defaultLocation, defaultPrice)).openPopup();
+
+            leafletCircle = L.circle([defaultLat, defaultLon], {
+                radius: 1000,
+                color: '#d4af37',
+                fillColor: '#d4af37',
+                fillOpacity: 0.12,
+                weight: 1.8
+            }).addTo(leafletMap);
+
+            leafletMarker.on('dragend', function (e) {
+                const pos = e.target.getLatLng();
+                leafletCircle.setLatLng(pos);
+                updateCoordinates(pos.lat, pos.lng);
+            });
+
+            leafletMap.on('click', function (e) {
+                const lat = e.latlng.lat;
+                const lon = e.latlng.lng;
+                leafletMarker.setLatLng([lat, lon]);
+                leafletCircle.setLatLng([lat, lon]);
+                updateCoordinates(lat, lon);
+                if (dropPinMode) exitDropPinMode();
+            });
+
+            leafletMap.on('mousemove', function (e) {
+                updateCoordinateDisplay(e.latlng.lat, e.latlng.lng);
+            });
+
+            setupButtonHandlers();
+            setupStyleSwitcher();
+            initPlaceSearchNominatim();
+
+            console.log("[Leaflet Map] Successfully activated fallback interactive map.");
+        }
+
+        // Immediately activate Leaflet so the map renders with ZERO delay and is never blank
+        initLeafletMap(true);
+        setTimeout(() => {
+            if (leafletMap) leafletMap.invalidateSize();
+        }, 200);
+
+        // Check if an auth error already occurred prior to function registration
+        if (window._pendingLeafletFallback) {
+            initLeafletMap(true);
+        }
+
+        // Continuous Guardian: Detect if Google Maps inserts an error screen
+        const mapGuardianObserver = new MutationObserver(() => {
+            const mapEl = document.getElementById('map');
+            if (mapEl) {
+                const hasGmError = mapEl.querySelector('.gm-err-container') ||
+                    mapEl.querySelector('[class*="gm-err"]') ||
+                    (mapEl.innerText && mapEl.innerText.includes("Oops! Something went wrong"));
+                if (hasGmError && mapType !== 'leaflet') {
+                    console.warn("[Google Maps Guardian] Detected error dialog in container. Swapping immediately to interactive map.");
+                    mapGuardianObserver.disconnect();
+                    initLeafletMap(true);
+                }
+            }
+        });
+        const mapContainerEl = document.getElementById('map');
+        if (mapContainerEl) {
+            mapGuardianObserver.observe(mapContainerEl, { childList: true, subtree: true });
+        }
+
+        // ========================================================
+        // SHARED BUTTON HANDLERS
+        // ========================================================
+        function setupButtonHandlers() {
+            // Drop Pin Mode
+            const dropPinBtn = document.getElementById('btn-drop-pin');
+            if (dropPinBtn && !dropPinBtn.dataset.bound) {
+                dropPinBtn.dataset.bound = "true";
+                dropPinBtn.addEventListener('click', function () {
+                    if (dropPinMode) {
+                        exitDropPinMode();
+                    } else {
+                        dropPinMode = true;
+                        this.classList.add('active');
+                        document.getElementById('map').style.cursor = 'crosshair';
+                        this.querySelector('span').textContent = 'Click Map...';
+                    }
+                });
+            }
+
+            // GPS My Location
+            const myLocBtn = document.getElementById('btn-my-location');
+            if (myLocBtn && !myLocBtn.dataset.bound) {
+                myLocBtn.dataset.bound = "true";
+                myLocBtn.addEventListener('click', function () {
+                    const btn = this;
+                    btn.classList.add('loading');
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            function (pos) {
+                                const lat = pos.coords.latitude;
+                                const lon = pos.coords.longitude;
+                                btn.classList.remove('loading');
+
+                                if (mapType === 'google' && gMap) {
+                                    const pt = new google.maps.LatLng(lat, lon);
+                                    gMap.panTo(pt);
+                                    gMap.setZoom(15);
+                                    gMarker.setPosition(pt);
+                                    gCircle.setCenter(pt);
+                                } else if (leafletMap) {
+                                    leafletMap.flyTo([lat, lon], 15, { duration: 1.5 });
+                                    leafletMarker.setLatLng([lat, lon]);
+                                    leafletCircle.setLatLng([lat, lon]);
+                                }
+                                updateCoordinates(lat, lon);
+                            },
+                            function () {
+                                alert('Could not get your location. Please check browser permissions.');
+                                btn.classList.remove('loading');
+                            },
+                            { timeout: 10000, enableHighAccuracy: true }
+                        );
+                    } else {
+                        alert('Geolocation is not supported by your browser.');
+                        btn.classList.remove('loading');
+                    }
+                });
+            }
+
+            // Prime Hub Chips
+            document.querySelectorAll('#preset-chips .locality-chip').forEach(chip => {
+                if (chip.dataset.bound) return;
+                chip.dataset.bound = "true";
+                chip.addEventListener('click', function () {
+                    document.querySelectorAll('#preset-chips .locality-chip').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const name = this.getAttribute('data-name');
+                    const lat = parseFloat(this.getAttribute('data-lat'));
+                    const lon = parseFloat(this.getAttribute('data-lon'));
+                    const price = parseFloat(this.getAttribute('data-price'));
+
+                    if (mapType === 'google' && gMap) {
+                        const pt = new google.maps.LatLng(lat, lon);
+                        gMap.panTo(pt);
+                        gMap.setZoom(14);
+                        gMarker.setPosition(pt);
+                        gCircle.setCenter(pt);
+                    } else if (leafletMap) {
+                        leafletMap.flyTo([lat, lon], 14, { duration: 1.2 });
+                        leafletMarker.setLatLng([lat, lon]);
+                        leafletCircle.setLatLng([lat, lon]);
+                    }
+
+                    updateCoordinates(lat, lon, name, price);
+                });
+            });
+
+            // Fallback place search listeners
+            initPlaceSearchNominatim();
+        }
+
+        function exitDropPinMode() {
+            dropPinMode = false;
+            const btn = document.getElementById('btn-drop-pin');
+            if (btn) {
+                btn.classList.remove('active');
+                btn.querySelector('span').textContent = 'Drop Pin';
+            }
+            const mapEl = document.getElementById('map');
+            if (mapEl) mapEl.style.cursor = '';
+        }
+
+        function isInsideBangalore(lat, lon) {
+            // Greater Bengaluru Metropolitan region boundaries
+            return lat >= 12.65 && lat <= 13.30 && lon >= 77.30 && lon <= 77.90;
+        }
+
+        function buildPopupHtml(name, price, isOutOfRange = false) {
+            if (isOutOfRange) {
+                return `<div class="map-popup-content" style="color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: #f59e0b; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 2px;">⚠️ Geographic Warning</div>
+                    <div style="font-size: 15px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">${name}</div>
+                    <div style="font-size: 16px; font-weight: 800; color: #f59e0b;">Outside the range</div>
+                    <div style="font-size: 10px; color: #94a3b8; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 4px;">⚠️ Outside Bengaluru area. AI CatBoost models only cover Bengaluru properties.</div>
+                </div>`;
+            }
+            return `<div class="map-popup-content" style="color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif;">
+                <div style="font-size: 11px; text-transform: uppercase; color: #d4af37; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 2px;">Micro-Market Anchor</div>
+                <div style="font-size: 15px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">${name}</div>
+                <div style="font-size: 17px; font-weight: 800; color: #f5d77f;">&#8377; ${Number(price || 7500).toLocaleString()} <span style="font-size: 11px; color: #94a3b8; font-weight: 500;">/sqft</span></div>
+                <div style="font-size: 10px; color: #64748b; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 4px;">🎯 1km Catchment Zone • Drag pin to fine-tune</div>
+            </div>`;
+        }
+
+        function updateCoordinateDisplay(lat, lon) {
+            const coordText = document.getElementById('map-coord-text');
+            if (coordText) {
+                coordText.textContent = Number(lat).toFixed(5) + ', ' + Number(lon).toFixed(5);
+            }
+        }
+
+        // ========================================================
+        // COORDINATE & VALUATION CONTEXT SYNC
+        // ========================================================
+        function findClosestLocality(lat, lon) {
+            if (!rawLocations || rawLocations.length === 0) return null;
+            let minDistance = Infinity;
+            let closest = rawLocations[0];
+
+            for (let i = 0; i < rawLocations.length; i++) {
+                const item = rawLocations[i];
+                const d = Math.pow(lat - item.lat, 2) + Math.pow(lon - item.lon, 2);
+                if (d < minDistance) {
+                    minDistance = d;
+                    closest = item;
+                }
+            }
+            return closest;
+        }
+
+        function updateCoordinates(lat, lon, knownName, knownPrice) {
+            document.getElementById('lat').value = lat.toFixed(6);
+            document.getElementById('lon').value = lon.toFixed(6);
+
+            const isOut = !isInsideBangalore(lat, lon);
+            const statusBox = document.getElementById('location-status-box');
+            const badgeIcon = document.getElementById('location-badge-icon');
+            const outBanner = document.getElementById('map-out-banner');
+
+            let locName = knownName;
+            let price = knownPrice;
+
+            if (!locName) {
+                if (!isOut) {
+                    const nearest = findClosestLocality(lat, lon);
+                    if (nearest) {
+                        locName = nearest.name;
+                        price = nearest.price_sqft;
+                    } else {
+                        locName = 'Bengaluru Urban';
+                        price = 7500;
+                    }
+                } else {
+                    locName = 'Outside Bangalore';
+                }
+            }
+
+            if (isOut) {
+                const displayTitle = locName + (locName.toLowerCase().includes('outside') ? '' : ' (Outside Bangalore)');
+                document.getElementById('status-location-name').textContent = displayTitle;
+                document.getElementById('status-coords').textContent = 'Lat: ' + lat.toFixed(6) + ', Lon: ' + lon.toFixed(6);
+                document.getElementById('status-price-sqft').innerHTML = '<span style="color: #f59e0b; font-weight: 800; font-size: 13.5px;">Outside the range</span>';
+                if (statusBox) statusBox.classList.add('out-of-range');
+                if (badgeIcon) badgeIcon.textContent = '⚠️';
+                if (outBanner) {
+                    outBanner.style.display = 'flex';
+                    outBanner.textContent = '⚠️ Location is outside Bangalore. Valuation will show Outside the range.';
+                }
+            } else {
+                document.getElementById('status-location-name').textContent = locName + ', Bengaluru';
+                document.getElementById('status-coords').textContent = 'Lat: ' + lat.toFixed(6) + ', Lon: ' + lon.toFixed(6);
+                if (price) {
+                    document.getElementById('status-price-sqft').innerHTML = '&#8377; ' + Number(price).toLocaleString() + ' / sqft';
+                }
+                if (statusBox) statusBox.classList.remove('out-of-range');
+                if (badgeIcon) badgeIcon.textContent = '📍';
+                if (outBanner) outBanner.style.display = 'none';
+            }
+
+            updateCoordinateDisplay(lat, lon);
+
+            const popupContent = buildPopupHtml(locName, price, isOut);
+
+            if (mapType === 'google' && gInfoWindow) {
+                gInfoWindow.setContent(popupContent);
+                gInfoWindow.open(gMap, gMarker);
+            } else if (leafletMarker) {
+                leafletMarker.setPopupContent(popupContent).openPopup();
+            }
+        }
+
+        // ========================================================
+        // NOMINATIM PLACE SEARCH (FOR FALLBACK & ENTER KEY)
+        // ========================================================
+        function initPlaceSearchNominatim() {
+            const input = document.getElementById('map-place-search');
+            const dropdown = document.getElementById('map-search-dropdown');
+            const clearBtn = document.getElementById('map-search-clear');
+            const spinner = document.getElementById('map-search-spinner');
+            if (!input || input.dataset.nominatimBound) return;
+            input.dataset.nominatimBound = "true";
+
+            input.addEventListener('input', function () {
+                const query = this.value.trim();
+                if (clearBtn) {
+                    clearBtn.style.opacity = query.length > 0 ? '1' : '0';
+                    clearBtn.style.pointerEvents = query.length > 0 ? 'auto' : 'none';
+                }
+
+                // If Google Autocomplete is active, let Google handle suggestions unless empty
+                if (mapType === 'google' && query.length < 2) {
+                    closeDropdown();
+                    return;
+                }
+
+                if (query.length < 2) {
+                    closeDropdown();
+                    return;
+                }
+
+                // First check local dataset
+                const backendMatch = locationPriceMap[query.toLowerCase()];
+                if (backendMatch) {
+                    showDropdown([{
+                        display_name: backendMatch.name + ', Bengaluru, India',
+                        lat: backendMatch.lat,
+                        lon: backendMatch.lon,
+                        price: backendMatch.price_sqft,
+                        isBackend: true
+                    }]);
+                }
+
+                // Debounce Nominatim call
+                clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = setTimeout(() => fetchNominatim(query, spinner), 400);
+            });
+
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function () {
+                    input.value = '';
+                    this.style.opacity = '0';
+                    this.style.pointerEvents = 'none';
+                    closeDropdown();
+                    input.focus();
+                });
+            }
+
+            document.addEventListener('click', function (e) {
+                const overlay = document.getElementById('map-search-overlay');
+                if (overlay && !overlay.contains(e.target)) {
+                    closeDropdown();
+                }
+            });
+        }
+
+        function fetchNominatim(query, spinner) {
+            // Avoid duplicate dropdown if Google Places results are already visible
+            if (document.querySelector('.pac-container:not([style*="display: none"])')) {
+                return;
+            }
+
+            const searchQuery = query.includes('bengaluru') || query.includes('bangalore') ? query : query + ' Bengaluru India';
+            const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=6&countrycodes=in&addressdetails=1`;
+
+            if (spinner) spinner.innerHTML = `<div class="search-spinner"></div>`;
+
+            fetch(url, { headers: { 'Accept-Language': 'en' } })
+                .then(r => r.json())
+                .then(results => {
+                    if (spinner) spinner.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`;
+                    if (results && results.length > 0) {
+                        showDropdown(results);
+                    } else {
+                        showDropdown([], true);
+                    }
+                })
+                .catch(() => {
+                    if (spinner) spinner.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`;
+                });
+        }
+
+        function showDropdown(results, empty) {
+            const dropdown = document.getElementById('map-search-dropdown');
+            if (!dropdown) return;
+            dropdown.innerHTML = '';
+
+            if (empty || results.length === 0) {
+                dropdown.innerHTML = `<div class="map-dropdown-empty">No places found. Try a different name.</div>`;
+                dropdown.style.display = 'block';
+                return;
+            }
+
+            results.forEach(result => {
+                const item = document.createElement('div');
+                item.className = 'map-dropdown-item';
+                const name = result.display_name || result.name;
+                const shortName = name.split(',').slice(0, 2).join(',').trim();
+                const fullAddress = name.split(',').slice(2).join(',').trim();
+
+                let badge = '';
+                if (result.isBackend) badge = '<span class="dropdown-badge">Local</span>';
+                else if (result.type === 'administrative') badge = '<span class="dropdown-badge area">Area</span>';
+
+                item.innerHTML = `
+                    <div class="dropdown-item-icon">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 4.5 7 13 7 13s7-8.5 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
+                    </div>
+                    <div class="dropdown-item-text">
+                        <div class="dropdown-item-name">${shortName} ${badge}</div>
+                        <div class="dropdown-item-addr">${fullAddress.substring(0, 60) || 'Bengaluru, India'}</div>
+                    </div>`;
+
+                item.addEventListener('click', function () {
+                    const lat = parseFloat(result.lat);
+                    const lon = parseFloat(result.lon);
+                    const displayName = shortName;
+                    const price = result.price || null;
+
+                    document.getElementById('map-place-search').value = shortName;
+                    closeDropdown();
+
+                    if (mapType === 'google' && gMap) {
+                        const pt = new google.maps.LatLng(lat, lon);
+                        gMap.panTo(pt);
+                        gMap.setZoom(15);
+                        gMarker.setPosition(pt);
+                        gCircle.setCenter(pt);
+                    } else if (leafletMap) {
+                        leafletMap.flyTo([lat, lon], 15, { duration: 1.3 });
+                        leafletMarker.setLatLng([lat, lon]);
+                        leafletCircle.setLatLng([lat, lon]);
+                    }
+
+                    updateCoordinates(lat, lon, displayName, price);
+                    document.querySelectorAll('#preset-chips .locality-chip').forEach(c => c.classList.remove('active'));
+                });
+
+                dropdown.appendChild(item);
+            });
+
+            dropdown.style.display = 'block';
+        }
+
+        function closeDropdown() {
+            const dropdown = document.getElementById('map-search-dropdown');
+            if (dropdown) dropdown.style.display = 'none';
+        }
+
+        // ========================================================
+        // UI FORM SPECIFICATIONS & VALIDATION
+        // ========================================================
+        function setupPills(containerId, hiddenInputId) {
+            const container = document.getElementById(containerId);
+            const hiddenInput = document.getElementById(hiddenInputId);
+            if (!container || !hiddenInput) return;
+
+            container.querySelectorAll('.segmented-pill').forEach(pill => {
+                pill.addEventListener('click', function () {
+                    container.querySelectorAll('.segmented-pill').forEach(p => p.classList.remove('active'));
+                    this.classList.add('active');
+                    hiddenInput.value = this.getAttribute('data-val');
+                });
+            });
+        }
+
+        setupPills('bhk-pills', 'bhk');
+        setupPills('bath-pills', 'bath');
+
+        const sqftInput = document.getElementById('total_sqft');
+        const sqftSlider = document.getElementById('sqft-slider');
+
+        if (sqftInput && sqftSlider) {
+            sqftInput.addEventListener('input', function () {
+                let val = parseInt(this.value) || 300;
+                if (val > 6000) sqftSlider.value = 6000;
+                else if (val < 400) sqftSlider.value = 400;
+                else sqftSlider.value = val;
+            });
+
+            sqftSlider.addEventListener('input', function () {
+                sqftInput.value = this.value;
+            });
+        }
+
+        function setSqft(val) {
+            if (sqftInput && sqftSlider) {
+                sqftInput.value = val;
+                sqftSlider.value = Math.min(6000, Math.max(400, val));
+            }
+        }
+
+        function selectPropType(element, typeName) {
+            document.querySelectorAll('#prop-types .property-type-card').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        let isSubmitting = false;
+        function handleFormSubmit(e) {
+            if (isSubmitting) return true;
+
+            const lat = document.getElementById('lat').value;
+            const lon = document.getElementById('lon').value;
+            const sqft = document.getElementById('total_sqft').value;
+
+            if (!lat || !lon) {
+                alert("Please select a location on the map first!");
+                return false;
+            }
+
+            if (!sqft || sqft <= 0) {
+                alert("Please enter a valid property area in square feet.");
+                return false;
+            }
+
+            e.preventDefault();
+            isSubmitting = true;
+
+            const overlay = document.getElementById('telemetry-overlay');
+            if (overlay) overlay.classList.add('active');
+
+            const s1 = document.getElementById('t-step-1');
+            const s2 = document.getElementById('t-step-2');
+            const s3 = document.getElementById('t-step-3');
+            const s4 = document.getElementById('t-step-4');
+
+            setTimeout(() => {
+                if (s1) { s1.classList.remove('active'); s1.classList.add('done'); s1.querySelector('.telemetry-step-icon').textContent = '✓'; }
+                if (s2) s2.classList.add('active');
+            }, 250);
+
+            setTimeout(() => {
+                if (s2) { s2.classList.remove('active'); s2.classList.add('done'); s2.querySelector('.telemetry-step-icon').textContent = '✓'; }
+                if (s3) s3.classList.add('active');
+            }, 550);
+
+            setTimeout(() => {
+                if (s3) { s3.classList.remove('active'); s3.classList.add('done'); s3.querySelector('.telemetry-step-icon').textContent = '✓'; }
+                if (s4) s4.classList.add('active');
+            }, 850);
+
+            setTimeout(() => {
+                document.getElementById('valuation-form').submit();
+            }, 1100);
+
+            return false;
+        }
+
+        // ========================================================
+        // AI CONCIERGE EVENT HANDLERS
+        // ========================================================
+        const conciergeBtn = document.getElementById('open-concierge-btn');
+        const conciergeCloseBtn = document.getElementById('close-concierge-btn');
+        const conciergeDrawer = document.getElementById('concierge-drawer');
+        const conciergeBackdrop = document.getElementById('concierge-backdrop');
+        const conciergeInput = document.getElementById('concierge-input');
+        const conciergeSend = document.getElementById('concierge-send');
+        const conciergeChatBody = document.getElementById('concierge-chat-body');
+
+        function openConcierge() {
+            if (conciergeDrawer && conciergeBackdrop) {
+                conciergeDrawer.classList.add('active');
+                conciergeBackdrop.classList.add('active');
+                conciergeInput?.focus();
+            }
+        }
+
+        function closeConcierge() {
+            if (conciergeDrawer && conciergeBackdrop) {
+                conciergeDrawer.classList.remove('active');
+                conciergeBackdrop.classList.remove('active');
+            }
+        }
+
+        conciergeBtn?.addEventListener('click', openConcierge);
+        conciergeCloseBtn?.addEventListener('click', closeConcierge);
+        conciergeBackdrop?.addEventListener('click', closeConcierge);
+
+        async function sendConciergeMessage(query) {
+            query = (query || conciergeInput.value || '').trim();
+            if (!query) return;
+
+            // Append user bubble
+            const userBubble = document.createElement('div');
+            userBubble.className = 'chat-bubble user';
+            userBubble.textContent = query;
+            conciergeChatBody.appendChild(userBubble);
+            conciergeInput.value = '';
+            conciergeChatBody.scrollTop = conciergeChatBody.scrollHeight;
+
+            // Append typing bubble
+            const typingBubble = document.createElement('div');
+            typingBubble.className = 'chat-bubble bot';
+            typingBubble.innerHTML = '<em>Synthesizing CatBoost micro-market parameters...</em>';
+            conciergeChatBody.appendChild(typingBubble);
+            conciergeChatBody.scrollTop = conciergeChatBody.scrollHeight;
+
+            try {
+                const res = await fetch('/api/ai-concierge', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    let formattedReply = data.reply
+                        .replace(/### (.*)/g, '<h3 style="color:var(--gold-500); margin-bottom:6px;">$1</h3>')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\n\n/g, '<br><br>')
+                        .replace(/• /g, '• ');
+
+                    typingBubble.innerHTML = formattedReply;
+
+                    if (data.action) {
+                        const actBtn = document.createElement('button');
+                        actBtn.type = 'button';
+                        actBtn.className = 'chat-apply-btn';
+                        actBtn.innerHTML = `<span>⚡</span> Apply ${data.action.location} (${data.action.bhk}BHK, ${data.action.sqft} sqft) to Form`;
+                        actBtn.addEventListener('click', () => applyConciergeAction(data.action));
+                        typingBubble.appendChild(actBtn);
+                    }
+                } else {
+                    typingBubble.innerHTML = `<span style="color:#f59e0b;">⚠️ ${data.error || 'Unable to analyze query.'}</span>`;
+                }
+            } catch (err) {
+                typingBubble.innerHTML = '<span style="color:#ef4444;">Connection error. Please try again.</span>';
+            }
+
+            conciergeChatBody.scrollTop = conciergeChatBody.scrollHeight;
+        }
+
+        function sendQuickPrompt(promptText) {
+            openConcierge();
+            sendConciergeMessage(promptText);
+        }
+
+        function applyConciergeAction(act) {
+            if (!act) return;
+
+            // 1. Update BHK Pill & hidden input
+            const bhkPill = document.querySelector(`#bhk-pills .segmented-pill[data-val="${act.bhk}"]`);
+            if (bhkPill) bhkPill.click();
+
+            // 2. Update Bath Pill & hidden input
+            const bathPill = document.querySelector(`#bath-pills .segmented-pill[data-val="${act.bath}"]`);
+            if (bathPill) bathPill.click();
+
+            // 3. Update Sqft
+            setSqft(act.sqft);
+
+            // 4. Update Coordinates & Pan Map
+            updateCoordinates(act.lat, act.lon, act.location, act.price_sqft);
+            const pt = { lat: act.lat, lng: act.lon };
+            if (mapType === 'google' && gMap && gMarker) {
+                gMap.panTo(pt);
+                gMap.setZoom(15);
+                gMarker.setPosition(pt);
+                if (gCircle) gCircle.setCenter(pt);
+            } else if (leafletMap && leafletMarker) {
+                leafletMap.flyTo([act.lat, act.lon], 15, { duration: 1.2 });
+                leafletMarker.setLatLng([act.lat, act.lon]);
+                if (leafletCircle) leafletCircle.setLatLng([act.lat, act.lon]);
+            }
+
+            closeConcierge();
+
+            // Scroll down to form
+            const formEl = document.getElementById('valuation-form');
+            if (formEl) formEl.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        conciergeSend?.addEventListener('click', () => sendConciergeMessage());
+        conciergeInput?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') sendConciergeMessage();
+        });
+
+        // Initialize fallback safety timeout in case Google Maps script is blocked or in error state
+        setTimeout(() => {
+            const mapEl = document.getElementById('map');
+            const hasGmError = mapEl && (
+                mapEl.querySelector('.gm-err-container') ||
+                mapEl.querySelector('[class*="gm-err"]') ||
+                (mapEl.innerText && mapEl.innerText.includes("Oops! Something went wrong"))
+            );
+            if (hasGmError || !window.gMapInitialized || mapType !== 'google') {
+                initLeafletMap(true);
+            }
+        }, 1200);
+    </script>
+</body>
+
+</html>
