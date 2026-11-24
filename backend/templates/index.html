@@ -596,7 +596,7 @@
 
                 const markerIcon = {
                     path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z",
-                    fillColor: "#d4af37",
+                    fillColor: "#F0956A",
                     fillOpacity: 1,
                     strokeColor: "#ffffff",
                     strokeWeight: 2,
@@ -617,11 +617,11 @@
                     map: gMap,
                     center: { lat: curLat, lng: curLon },
                     radius: 1000,
-                    strokeColor: "#d4af37",
+                    strokeColor: "#5B8DB8",
                     strokeOpacity: 0.85,
                     strokeWeight: 1.8,
-                    fillColor: "#d4af37",
-                    fillOpacity: 0.12
+                    fillColor: "#A9CDEB",
+                    fillOpacity: 0.18
                 });
 
                 gInfoWindow = new google.maps.InfoWindow({
@@ -811,9 +811,9 @@
 
             leafletCircle = L.circle([defaultLat, defaultLon], {
                 radius: 1000,
-                color: '#d4af37',
-                fillColor: '#d4af37',
-                fillOpacity: 0.12,
+                color: '#5B8DB8',
+                fillColor: '#A9CDEB',
+                fillOpacity: 0.18,
                 weight: 1.8
             }).addTo(leafletMap);
 
@@ -984,18 +984,18 @@
 
         function buildPopupHtml(name, price, isOutOfRange = false) {
             if (isOutOfRange) {
-                return `<div class="map-popup-content" style="color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif;">
-                    <div style="font-size: 11px; text-transform: uppercase; color: #f59e0b; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 2px;">⚠️ Geographic Warning</div>
-                    <div style="font-size: 15px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">${name}</div>
-                    <div style="font-size: 16px; font-weight: 800; color: #f59e0b;">Outside the range</div>
-                    <div style="font-size: 10px; color: #94a3b8; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 4px;">⚠️ Outside Bengaluru area. AI CatBoost models only cover Bengaluru properties.</div>
+                return `<div class="map-popup-content" style="color: var(--text); font-family: var(--font-body);">
+                    <div style="font-size: 11px; text-transform: uppercase; color: var(--warning); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 2px;">⚠️ Geographic Notice</div>
+                    <div style="font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px;">${name}</div>
+                    <div style="font-size: 15px; font-weight: 800; color: var(--error);">Outside the range</div>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px; border-top: 1px solid var(--lavender); padding-top: 4px;">⚠️ Outside Bengaluru area. AI CatBoost models only cover Bengaluru properties.</div>
                 </div>`;
             }
-            return `<div class="map-popup-content" style="color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif;">
-                <div style="font-size: 11px; text-transform: uppercase; color: #d4af37; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 2px;">Micro-Market Anchor</div>
-                <div style="font-size: 15px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">${name}</div>
-                <div style="font-size: 17px; font-weight: 800; color: #f5d77f;">&#8377; ${Number(price || 7500).toLocaleString()} <span style="font-size: 11px; color: #94a3b8; font-weight: 500;">/sqft</span></div>
-                <div style="font-size: 10px; color: #64748b; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 4px;">🎯 1km Catchment Zone • Drag pin to fine-tune</div>
+            return `<div class="map-popup-content" style="color: var(--text); font-family: var(--font-body);">
+                <div style="font-size: 11px; text-transform: uppercase; color: var(--primary-deep); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 2px;">Micro-Market Anchor</div>
+                <div style="font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px;">${name}</div>
+                <div style="font-size: 16px; font-weight: 800; color: var(--primary-deep);">&#8377; ${Number(price || 7500).toLocaleString()} <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">/sqft</span></div>
+                <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 6px; border-top: 1px solid var(--lavender); padding-top: 4px;">🎯 1km Catchment Zone • Drag pin to update</div>
             </div>`;
         }
 
